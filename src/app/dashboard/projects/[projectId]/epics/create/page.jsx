@@ -54,7 +54,7 @@ export default function CreateEpic() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         const data = await res.json();
@@ -79,30 +79,29 @@ export default function CreateEpic() {
         ?.split("=")[1];
 
       const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/epics?project_id=eq.${projectId}`,
+        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/epics?`,
         {
           method: "POST",
           headers: {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
-            
           },
-         body: JSON.stringify({
-  title: data.title,
-  description: data.description || "",
-  assignee_id: "1fae3877-e08b-4eb0-8c50-f7a7452e3160",
-  project_id: projectId,
-  deadline: data.deadline || null,
-}),
-        }
+          body: JSON.stringify({
+            title: data.title,
+            description: data.description || "",
+            assignee_id: data.user_id,
+            project_id: projectId,
+            deadline: data.deadline || null,
+          }),
+        },
       );
 
       if (!res.ok) throw new Error("Failed to create epic");
 
       toast.success("Epic created successfully");
 
-      router.push(`/projects/projects/${projectId}/epics`);
+      router.push(`dashboard/projects/${projectId}/epics`);
     } catch (err) {
       console.log(err);
       toast.error(err.message);
@@ -112,18 +111,13 @@ export default function CreateEpic() {
   /* ================= UI ================= */
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-
-
       {/* ================= FORM CONTAINER ================= */}
       <div className="flex-1 flex justify-center items-center px-4">
-
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm">
-
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="p-6 flex flex-col gap-5"
           >
-
             {/* ================= TITLE ================= */}
             <div>
               <label className="text-xs text-gray-500">Title</label>
@@ -159,7 +153,6 @@ export default function CreateEpic() {
                 {...register("assignee_id")}
                 className="w-full mt-1 bg-[#D7E2FF] rounded-md px-4 py-3 outline-none"
               >
-
                 {loadingMembers ? (
                   <option>Loading...</option>
                 ) : (
@@ -185,12 +178,9 @@ export default function CreateEpic() {
 
             {/* ================= BUTTONS ================= */}
             <div className="flex justify-between mt-3">
-
               <button
                 type="button"
-                onClick={() =>
-                  router.push(`/project/${projectId}/epics`)
-                }
+                onClick={() => router.push(`/project/${projectId}/epics`)}
                 className="text-gray-500"
               >
                 Cancel
@@ -202,9 +192,7 @@ export default function CreateEpic() {
               >
                 {isSubmitting ? "Creating..." : "Create"}
               </button>
-
             </div>
-
           </form>
         </div>
       </div>
