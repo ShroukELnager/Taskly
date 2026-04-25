@@ -9,12 +9,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import toast from "react-hot-toast";
+import { required } from "zod/v4-mini";
 
-/* ================= VALIDATION SCHEMA ================= */
+/* ================= VALIDATION SCHEMA  */
 const schema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().optional(),
-  assignee_id: z.string().optional(),
+  user_id: z.string(), 
   deadline: z.string().optional(),
 });
 
@@ -22,11 +23,10 @@ export default function CreateEpic() {
   const router = useRouter();
   const { projectId } = useParams();
 
-  /* ================= STATE ================= */
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
 
-  /* ================= REACT HOOK FORM ================= */
+  /* ================= REACT HOOK FORM*/
   const {
     register,
     handleSubmit,
@@ -36,7 +36,7 @@ export default function CreateEpic() {
     mode: "onSubmit",
   });
 
-  /* ================= FETCH MEMBERS ================= */
+  /* ================= FETCH MEMBERS  */
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -70,7 +70,6 @@ export default function CreateEpic() {
     fetchMembers();
   }, [projectId]);
 
-  /* ================= SUBMIT ================= */
   const onSubmit = async (data) => {
     try {
       const token = document.cookie
@@ -78,8 +77,18 @@ export default function CreateEpic() {
         .find((row) => row.startsWith("access_token="))
         ?.split("=")[1];
 
+      const requestBody = {
+        title: data.title,
+        description: data.description || "",
+        assignee_id: data.user_id, 
+        project_id: projectId,
+        deadline: data.deadline || null,
+      };
+
+   
+
       const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/epics?`,
+        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/epics`,
         {
           method: "POST",
           headers: {
@@ -87,13 +96,7 @@ export default function CreateEpic() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            title: data.title,
-            description: data.description || "",
-            assignee_id: data.user_id,
-            project_id: projectId,
-            deadline: data.deadline || null,
-          }),
+          body: JSON.stringify(requestBody),
         },
       );
 
@@ -101,24 +104,22 @@ export default function CreateEpic() {
 
       toast.success("Epic created successfully");
 
-      router.push(`dashboard/projects/${projectId}/epics`);
+      router.push(`/dashboard/projects/${projectId}/epics`);
     } catch (err) {
       console.log(err);
       toast.error(err.message);
     }
   };
 
-  /* ================= UI ================= */
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* ================= FORM CONTAINER ================= */}
       <div className="flex-1 flex justify-center items-center px-4">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm">
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="p-6 flex flex-col gap-5"
           >
-            {/* ================= TITLE ================= */}
+            {/* TITLE */}
             <div>
               <label className="text-xs text-gray-500">Title</label>
 
@@ -134,7 +135,7 @@ export default function CreateEpic() {
               )}
             </div>
 
-            {/* ================= DESCRIPTION ================= */}
+            {/* DESCRIPTION */}
             <div>
               <label className="text-xs text-gray-500">Description</label>
 
@@ -145,27 +146,29 @@ export default function CreateEpic() {
               />
             </div>
 
-            {/* ================= ASSIGNEE ================= */}
+            {/* ASSIGNEE */}
             <div>
               <label className="text-xs text-gray-500">Assignee</label>
 
               <select
-                {...register("assignee_id")}
+                {...register("user_id", required)}
                 className="w-full mt-1 bg-[#D7E2FF] rounded-md px-4 py-3 outline-none"
+                defaultValue="" 
               >
-                {loadingMembers ? (
-                  <option>Loading...</option>
-                ) : (
+                <option value="" disabled>
+                  {loadingMembers ? "Loading..." : "Select assignee"}
+                </option>
+
+                {!loadingMembers &&
                   members.map((m) => (
                     <option key={m.user_id} value={m.user_id}>
                       {m.metadata?.name || m.email}
                     </option>
-                  ))
-                )}
+                  ))}
               </select>
             </div>
 
-            {/* ================= DEADLINE ================= */}
+            {/* DEADLINE */}
             <div>
               <label className="text-xs text-gray-500">Deadline</label>
 
@@ -176,11 +179,13 @@ export default function CreateEpic() {
               />
             </div>
 
-            {/* ================= BUTTONS ================= */}
+            {/* BUTTONS */}
             <div className="flex justify-between mt-3">
               <button
                 type="button"
-                onClick={() => router.push(`/project/${projectId}/epics`)}
+                onClick={() =>
+                  router.push(`/dashboard/projects/${projectId}/epics`)
+                }
                 className="text-gray-500"
               >
                 Cancel
