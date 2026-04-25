@@ -26,7 +26,6 @@ export default function CreateEpic() {
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
 
-  /* ================= REACT HOOK FORM*/
   const {
     register,
     handleSubmit,

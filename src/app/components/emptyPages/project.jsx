@@ -8,7 +8,6 @@ export default function EmptyProjects() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12 sm:py-20 px-4 sm:px-6 text-center w-full max-w-6xl mx-auto">
-
       {/* Image */}
       <div className="mb-6">
         <Image
@@ -22,14 +21,14 @@ export default function EmptyProjects() {
 
       {/* Title */}
       <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-        No  project yet.
+        No project yet.
       </h2>
 
       {/* Description */}
       <p className="text-sm sm:text-base text-gray-500 max-w-md mb-6 px-2">
-You don’t have any projects yet. Start by defining
-your first architectural workspace to begin tracking
-tasks and epics.      </p>
+        You don’t have any projects yet. Start by defining your first
+        architectural workspace to begin tracking tasks and epics.{" "}
+      </p>
 
       {/* Button */}
       <button
@@ -47,9 +46,6 @@ tasks and epics.      </p>
         />
         Create First project
       </button>
-
-      {/* Features */}
-     
     </div>
   );
 }

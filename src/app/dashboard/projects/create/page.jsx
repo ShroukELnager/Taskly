@@ -95,7 +95,6 @@ const onSubmit = async (data) => {
         </button>
       </div>
 
-      {/* CENTER */}
       <div className="flex-1 flex justify-center items-center px-4">
 
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm overflow-hidden">

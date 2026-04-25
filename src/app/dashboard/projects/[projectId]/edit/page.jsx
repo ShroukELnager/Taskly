@@ -9,20 +9,12 @@ import toast from "react-hot-toast";
 export default function EditProjectPage() {
   const router = useRouter();
 
-  // =========================
-  // 🧠 بنجيب projectId من الـ URL
-  // مثال: /project/123/edit
-  // =========================
   const { projectId } = useParams();
 
-  // =========================
-  // 📦 state لحفظ loading أثناء fetch
-  // =========================
+
   const [loading, setLoading] = useState(true);
 
-  // =========================
-  // 🧾 React Hook Form
-  // =========================
+
   const {
     register,
     handleSubmit,
@@ -35,9 +27,7 @@ export default function EditProjectPage() {
 
   const description = watch("description") || "";
 
-  // =========================
-  // 🔄 GET PROJECT DATA (READ)
-  // =========================
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -60,9 +50,7 @@ export default function EditProjectPage() {
 
         const data = await res.json();
 
-        // =========================
-        // 🧠 بنحط الداتا في الفورم
-        // =========================
+     
         if (data?.[0]) {
           setValue("name", data[0].name);
           setValue("description", data[0].description);
@@ -78,9 +66,7 @@ export default function EditProjectPage() {
     fetchProject();
   }, [projectId, setValue]);
 
-  // =========================
-  // 💾 UPDATE PROJECT (PATCH)
-  // =========================
+
   const onSubmit = async (data) => {
     try {
       const token = document.cookie
@@ -111,9 +97,7 @@ export default function EditProjectPage() {
 
       toast.success("Project updated successfully");
 
-      // =========================
-      // 🔁 رجوع لصفحة المشاريع
-      // =========================
+
       router.push("/dashboard/projects/projects");
     } catch (error) {
       console.error(error);
@@ -121,9 +105,7 @@ export default function EditProjectPage() {
     }
   };
 
-  // =========================
-  // ⏳ LOADING UI
-  // =========================
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -157,7 +139,6 @@ export default function EditProjectPage() {
             className="p-6 flex flex-col gap-5"
           >
 
-            {/* ================= ICON + TITLE ================= */}
             <div className="flex items-center gap-3">
               <div className="w-[40px] h-[40px] bg-[#E5EEFA] rounded-lg flex items-center justify-center">
                 <Image
@@ -178,7 +159,6 @@ export default function EditProjectPage() {
               </div>
             </div>
 
-            {/* ================= NAME ================= */}
             <div className="flex flex-col gap-2">
               <label className="text-xs text-gray-500">Project name</label>
 
@@ -210,17 +190,14 @@ export default function EditProjectPage() {
                 className="bg-[#D7E2FF] rounded-md px-4 py-3 resize-none outline-none"
               />
 
-              {/* character counter */}
               <p className="text-xs text-gray-500 text-right">
                 {description.length}/500
               </p>
 
             </div>
 
-            {/* ================= ACTION BUTTONS ================= */}
             <div className="flex justify-between mt-3">
 
-              {/* CANCEL */}
               <button
                 type="button"
                 onClick={() => router.push("/dashboard/projects/projects")}
@@ -229,7 +206,6 @@ export default function EditProjectPage() {
                 Cancel
               </button>
 
-              {/* SAVE */}
               <button
                 type="submit"
                 disabled={isSubmitting}

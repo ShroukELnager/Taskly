@@ -73,12 +73,10 @@ export default function MembersPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto overflow-x-hidden">
 
-      {/* TITLE */}
   
 <h1 className="text-2xl font-semibold text-center lg:text-left mb-6">
   Project Members
 </h1>
-      {/* HEADER BUTTON (desktop only) */}
       <div className="hidden sm:flex justify-end mb-6">
         <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition flex items-center gap-2">
           <Image
@@ -94,14 +92,12 @@ export default function MembersPage() {
       {/* TABLE */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
 
-        {/* HEADER ROW (hidden mobile) */}
         <div className="hidden sm:grid grid-cols-3 p-4 text-xs text-gray-500 font-medium border-b">
           <p>MEMBER</p>
           <p>ROLE</p>
           <p>ACTIONS</p>
         </div>
 
-        {/* ROWS */}
         {members.map((member, index) => {
           const name = member.metadata?.name || "Unknown";
           const email = member.metadata?.email || "-";
@@ -116,7 +112,6 @@ export default function MembersPage() {
                 hover:bg-blue-50 transition
               "
             >
-              {/* MEMBER + ROLE (mobile) */}
               <div className="flex items-center justify-between gap-3 min-w-0">
 
                 <div className="flex items-center gap-3 min-w-0">
@@ -130,20 +125,17 @@ export default function MembersPage() {
                   </div>
                 </div>
 
-                {/* ROLE (mobile only) */}
                 <span className="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full sm:hidden">
                   {member.role}
                 </span>
               </div>
 
-              {/* ROLE (desktop) */}
               <div className="hidden sm:block">
                 <span className="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full">
                   {member.role}
                 </span>
               </div>
 
-              {/* ACTION */}
               <div className="flex justify-end sm:block cursor-pointer text-lg text-gray-500 ml-6">
                 ⋮
               </div>
@@ -152,7 +144,6 @@ export default function MembersPage() {
         })}
       </div>
 
-      {/* FLOAT BUTTON (mobile only) */}
       <button
         className="
           sm:hidden

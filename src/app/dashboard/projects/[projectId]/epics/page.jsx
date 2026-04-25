@@ -22,7 +22,6 @@ export default function EpicsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // ✅ الجديد
   const [selectedEpicId, setSelectedEpicId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -195,7 +194,6 @@ export default function EpicsPage() {
 
       </div>
 
-      {/* ✅ MODAL */}
       <EpicDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -203,7 +201,6 @@ export default function EpicsPage() {
         projectId={projectId}
       />
 
-      {/* MOBILE BUTTON */}
       <button
         onClick={() =>
           router.push(`/dashboard/projects/${projectId}/epics/create`)

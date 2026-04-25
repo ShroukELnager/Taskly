@@ -51,9 +51,7 @@ export default function EpicDetailsModal({
       onClick={onClose}
       className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50"
     >
-      {/* CONTAINER */}
       <div className="w-full sm:max-w-3xl sm:px-4">
-        {/* MODAL */}
         <div
           onClick={(e) => e.stopPropagation()}
           className="
@@ -66,7 +64,6 @@ export default function EpicDetailsModal({
           "
         >
           <div className="p-5 sm:p-6 relative">
-            {/* CLOSE */}
             <button
               onClick={onClose}
               className="absolute right-5 top-5"
@@ -94,7 +91,6 @@ export default function EpicDetailsModal({
                   </h2>
                 </div>
 
-                {/* DESCRIPTION */}
                 <div className="mb-5">
                   <p className="text-xs text-gray-400 uppercase mb-1">
                     Description
@@ -107,9 +103,7 @@ export default function EpicDetailsModal({
                   </p>
                 </div>
 
-                {/* INFO GRID */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 text-sm mb-6">
-                  {/* CREATED BY */}
                   <div>
                     <p className="text-gray-400 text-xs uppercase mb-1">
                       Created By
@@ -130,7 +124,6 @@ export default function EpicDetailsModal({
                     </div>
                   </div>
 
-                  {/* ASSIGNEE */}
                   <div>
                     <p className="text-gray-400 text-xs uppercase mb-1">
                       Assignee
@@ -151,7 +144,6 @@ export default function EpicDetailsModal({
                     </div>
                   </div>
 
-                  {/* CREATED AT */}
                   <div className="col-span-2 sm:col-span-1">
                     <p className="text-gray-400 text-xs uppercase mb-1">
                       Created At
@@ -176,7 +168,6 @@ export default function EpicDetailsModal({
                   </div>
                 </div>
 
-                {/* TASK HEADER */}
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="font-semibold text-gray-900">Tasks</h3>
 
@@ -185,7 +176,6 @@ export default function EpicDetailsModal({
                   </span>
                 </div>
 
-                {/* EMPTY STATE */}
                 <div className="border border-dashed rounded-xl p-8 sm:p-10 text-center bg-gray-50">
                   <div className="flex justify-center mb-3">
                     <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">

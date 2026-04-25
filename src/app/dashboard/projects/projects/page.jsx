@@ -95,21 +95,19 @@ export default function Projects() {
         )}
 
         {/* LOADING */}
-   
-{loading && (
-  <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {[...Array(limit)].map((_, i) => (
-      <SkeletonCard key={i} />
-    ))}
-  </div>
-)}
+
+        {loading && (
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(limit)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        )}
 
         {/* EMPTY */}
-        { projects.length === 0 && (
+        {projects.length === 0 && (
           <div className="flex flex-col items-center justify-center text-center py-20">
-           <EmptyProjects/>
-
-          
+            <EmptyProjects />
           </div>
         )}
 
