@@ -116,7 +116,7 @@ export default function EpicsPage() {
 
               <input
                 type="text"
-                placeholder="Search epics..."
+                placeholder="Search epics"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 pr-3 py-2 rounded-md bg-[#D4DEFB] border border-blue-100 text-sm outline-none focus:ring-2 focus:ring-blue-200"
