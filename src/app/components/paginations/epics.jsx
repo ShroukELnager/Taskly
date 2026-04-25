@@ -13,12 +13,10 @@ export default function EpicsPagination({
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mt-6 gap-3 w-full">
 
-      {/* LEFT TEXT */}
       <p className="text-sm text-gray-500 hidden md:block text-left w-full">
         Showing {end} of {totalCount} epics
       </p>
 
-      {/* PAGINATION */}
       <div className="flex items-center gap-2 justify-center md:justify-end w-full">
 
         <button

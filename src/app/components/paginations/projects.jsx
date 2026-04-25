@@ -14,15 +14,12 @@ export default function Pagination({
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mt-6 gap-3">
 
-      {/* LEFT TEXT (Desktop only) */}
       <p className="text-sm text-gray-500 hidden md:block text-left w-full">
         Showing {end} of {totalCount} active projects
       </p>
 
-      {/* PAGINATION */}
       <div className="flex items-center gap-2 justify-center md:justify-end w-full">
 
-        {/* PREV */}
         <button
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
