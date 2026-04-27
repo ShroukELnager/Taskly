@@ -11,7 +11,7 @@ export default function CreateTaskPage() {
   const {
     register,
     handleSubmit,
-   
+
     formState: { isSubmitting },
   } = useForm({
     defaultValues: {
@@ -32,13 +32,13 @@ export default function CreateTaskPage() {
       const token = Cookies.get("access_token");
 
       const res = await fetch(
-        `${Api_key}/rest/v1/project_epics?project_id=eq.${projectId}`,
+        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_epics?project_id=eq.${projectId}`,
         {
           headers: {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await res.json();
@@ -53,13 +53,13 @@ export default function CreateTaskPage() {
       const token = Cookies.get("access_token");
 
       const res = await fetch(
-        `${Api_key}/rest/v1/get_project_members?project_id=eq.${projectId}`,
+        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/get_project_members?project_id=eq.${projectId}`,
         {
           headers: {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await res.json();
@@ -72,7 +72,7 @@ export default function CreateTaskPage() {
     const token = Cookies.get("access_token");
 
     const res = await fetch(
-      `${Api_key}/rest/v1/tasks`,
+      `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/tasks`,
       {
         method: "POST",
         headers: {
@@ -83,9 +83,9 @@ export default function CreateTaskPage() {
         body: JSON.stringify({
           project_id: projectId,
           ...data,
-          status: data.status ,
+          status: data.status,
         }),
-      }
+      },
     );
 
     if (res.ok) {
@@ -96,14 +96,12 @@ export default function CreateTaskPage() {
   return (
     <div className="min-h-screen bg-[#F5F7FB] flex justify-center p-6">
       <div className="w-full max-w-3xl bg-white rounded-xl p-6 shadow-sm">
-
         <h1 className="text-2xl font-semibold mb-1">Create New Task</h1>
         <p className="text-sm text-gray-500 mb-6">
           Initialize a new work item within the project ecosystem.
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
           <div>
             <label className="text-xs font-semibold">TITLE *</label>
             <input
@@ -114,15 +112,20 @@ export default function CreateTaskPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-
             <div>
               <label className="text-xs font-semibold">STATUS *</label>
               <select
                 {...register("status")}
                 className="w-full mt-1 p-3 bg-blue-50 rounded-md"
               >
-                <option value="TO_DO">TO DO</option>
-           
+                <option value="TO_DO">TO DO</option>TO_DO
+                <option value="TO_DO">IN_PROGRESS</option>
+                <option value="TO_DO">BLOCKED</option>
+                <option value="TO_DO">IN_REVIEW</option>
+                <option value="TO_DO">READY_FOR_QA</option>
+                <option value="TO_DO">REOPENED</option>
+                <option value="TO_DO">READY_FOR_PRODUCTION</option>
+                <option value="TO_DO">DONE</option>
               </select>
             </div>
 
@@ -176,15 +179,21 @@ export default function CreateTaskPage() {
             />
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-col md:flex-row justify-end gap-3">
+            <button
+              onClick={() => router.push(`/project/${projectId}`)}
+              className="bg-white text-blue-700 px-6 py-3 rounded-md w-full md:w-auto"
+            >
+              Back
+            </button>
+
             <button
               disabled={isSubmitting}
-              className="bg-blue-700 text-white px-6 py-3 rounded-md"
+              className="bg-blue-700 text-white px-6 py-3 rounded-md w-full md:w-auto"
             >
               Create Task
             </button>
           </div>
-
         </form>
       </div>
     </div>
