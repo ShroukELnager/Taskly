@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Cookies from "js-cookie";
 import Image from "next/image";
 
-/* ================= DEBOUNCE HOOK ================= */
 function useDebounce(value, delay = 500) {
   const [debounced, setDebounced] = useState(value);
 
