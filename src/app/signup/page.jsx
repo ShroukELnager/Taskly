@@ -75,13 +75,11 @@ export default function Signup() {
 
   return (
     <div className="bg-[#F9F9FF] min-h-screen overflow-x-hidden">
-      {/* HEADER */}
       <div className="flex items-center gap-2 p-4">
         <Image src="/images/logo.svg" width={20} height={20} alt="logo" />
         <h1 className="font-bold text-xl">TASKLY</h1>
       </div>
 
-      {/* FORM */}
       <div className="flex justify-center items-center min-h-screen px-4">
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -95,7 +93,6 @@ export default function Signup() {
             Join the editorial approach to task management
           </p>
 
-          {/* NAME */}
           <div className="space-y-1">
             <label className="text-sm text-[#8691A4] font-medium">
               Name
@@ -111,7 +108,6 @@ export default function Signup() {
             )}
           </div>
 
-          {/* EMAIL */}
           <div className="space-y-1">
             <label className="text-sm text-[#8691A4] font-medium">
               Email
@@ -127,7 +123,6 @@ export default function Signup() {
             )}
           </div>
 
-          {/* JOB */}
           <div className="space-y-1">
             <label className="text-sm text-[#8691A4] font-medium">
               Job Title
@@ -140,7 +135,6 @@ export default function Signup() {
             />
           </div>
 
-          {/* PASSWORD */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-sm text-[#8691A4] font-medium">
