@@ -89,7 +89,7 @@ export default function CreateTaskPage() {
     );
 
     if (res.ok) {
-      router.push(`/project/${projectId}`);
+      router.push(`/dashboard/projects/projects`);
     }
   };
 
@@ -181,7 +181,7 @@ export default function CreateTaskPage() {
 
           <div className="flex flex-col md:flex-row justify-end gap-3">
             <button
-              onClick={() => router.push(`/project/${projectId}`)}
+              onClick={() => router.push(`/dashboard/projects/projects`)}
               className="bg-white text-blue-700 px-6 py-3 rounded-md w-full md:w-auto"
             >
               Back
