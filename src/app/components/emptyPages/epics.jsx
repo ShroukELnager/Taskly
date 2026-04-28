@@ -8,8 +8,6 @@ export default function EmptyEpics({ projectId }) {
 
   return (
     <div className="flex flex-col items-center justify-center py-12 sm:py-20 px-4 sm:px-6 text-center w-full max-w-6xl mx-auto">
-
-      {/* Image */}
       <div className="mb-6">
         <Image
           src="/images/Abstract _Epic.png"
@@ -20,20 +18,18 @@ export default function EmptyEpics({ projectId }) {
         />
       </div>
 
-      {/* Title */}
       <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
         No epics in this project yet.
       </h2>
 
-      {/* Description */}
       <p className="text-sm sm:text-base text-gray-500 max-w-md mb-6 px-2">
-        Break down your large project into manageable epics to track progress better and maintain architectural clarity.
+        Break down your large project into manageable epics to track progress
+        better and maintain architectural clarity.
       </p>
 
-      {/* Button */}
       <button
         onClick={() => {
-          router.push(`/dashboard/projects/${projectId}/epics/create`);
+          router.push(`/projects/${projectId}/epics/create`);
         }}
         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 text-sm rounded-md shadow-md transition flex items-center gap-2 whitespace-nowrap"
       >
@@ -47,12 +43,16 @@ export default function EmptyEpics({ projectId }) {
         Create First Epic
       </button>
 
-      {/* Features */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-10 sm:mt-12 w-full max-w-4xl">
-
         <FeatureCard
           icon={
-            <Image src="/images/high.png" width={20} height={20} alt="High-Level Goals" className="w-5 h-5" />
+            <Image
+              src="/images/high.png"
+              width={20}
+              height={20}
+              alt="High-Level Goals"
+              className="w-5 h-5"
+            />
           }
           title="High-Level Goals"
           desc="Define the broad objectives that span across multiple cycles."
@@ -60,7 +60,13 @@ export default function EmptyEpics({ projectId }) {
 
         <FeatureCard
           icon={
-            <Image src="/images/hierarchy.png" width={20} height={20} alt="Hierarchy Design" className="w-5 h-5" />
+            <Image
+              src="/images/hierarchy.png"
+              width={20}
+              height={20}
+              alt="Hierarchy Design"
+              className="w-5 h-5"
+            />
           }
           title="Hierarchy Design"
           desc="Link individual tasks to parent epics for a consolidated view."
@@ -68,7 +74,13 @@ export default function EmptyEpics({ projectId }) {
 
         <FeatureCard
           icon={
-            <Image src="/images/track.png" width={20} height={20} alt="Track Velocity" className="w-5 h-5" />
+            <Image
+              src="/images/track.png"
+              width={20}
+              height={20}
+              alt="Track Velocity"
+              className="w-5 h-5"
+            />
           }
           title="Track Velocity"
           desc="Visualize percentage completion at a macro project level."
@@ -87,9 +99,7 @@ function FeatureCard({ icon, title, desc }) {
         {title}
       </h4>
 
-      <p className="text-xs sm:text-sm text-gray-500 mt-1">
-        {desc}
-      </p>
+      <p className="text-xs sm:text-sm text-gray-500 mt-1">{desc}</p>
     </div>
   );
 }

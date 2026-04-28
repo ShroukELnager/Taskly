@@ -24,19 +24,28 @@ const usersSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      // loading
       .addCase(fetchUsers.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
 
-      // success
-      .addCase(fetchUsers.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
+    .addCase(fetchUsers.fulfilled, (state, action) => {
+  state.loading = false;
 
-      // error
+  const user = action.payload;
+
+  state.user = {
+    id: user.id,
+    email: user.email,
+    name: user.user_metadata?.name,
+    jobTitle: user.user_metadata?.job_title,
+    emailVerified: user.user_metadata?.email_verified,
+    phone: user.phone,
+    createdAt: user.created_at,
+    lastSignIn: user.last_sign_in_at,
+  };
+})
+
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;

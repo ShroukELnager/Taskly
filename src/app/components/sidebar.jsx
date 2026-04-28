@@ -21,22 +21,22 @@ export default function Sidebar() {
     {
       name: "Project Epics",
       icon: "/images/epics.svg",
-      href: `/dashboard/projects/${projectId}/epics`,
+      href: `/projects/${projectId}/epics`,
     },
     {
       name: "Project Tasks",
       icon: "/images/tasks.svg",
-      href: `/dashboard/projects/${projectId}/tasks`,
+      href: `/projects/${projectId}/tasks`,
     },
     {
       name: "Project Member",
       icon: "/images/member.svg",
-      href: `/dashboard/projects/${projectId}/members`,
+      href: `/projects/${projectId}/members`,
     },
     {
       name: "Project Details",
       icon: "/images/details.svg",
-      href: `/dashboard/projects/${projectId}/edit`,
+      href: `/projects/${projectId}/edit`,
     },
   ];
 
@@ -54,7 +54,7 @@ export default function Sidebar() {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!res.ok) throw new Error("Logout failed");
@@ -71,13 +71,18 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="md:hidden flex items-center justify-between p-3 bg-[#F1F3FF]">
+      <div className="md:hidden flex items-start justify-start p-3 bg-[#F1F3FF]">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setMobileOpen(true)}
             className="text-2xl md:hidden"
           >
-            <Image src="/images/menu.svg" width={20} height={18} alt="menu" />
+            <Image
+              src="/images/humberger.png"
+              width={20}
+              height={18}
+              alt="menu"
+            />
           </button>
           <span className="font-bold">TASKLY</span>
         </div>
@@ -109,45 +114,55 @@ export default function Sidebar() {
 
         <nav className="flex-1 px-2 py-6">
           <ul className="flex flex-col gap-4 px-5">
-
-            <li className="flex items-center gap-3 py-2 rounded-md hover:bg-gray-100 cursor-pointer transition">
-              <Image src="/images/projects 2.svg" width={45} height={45} alt="Projects" />
+            <li className="flex items-center gap-3 py-2 rounded-md hover:bg-gray-100 px-2 cursor-pointer transition">
+              <Image
+                src="/images/proj.png"
+                width={20}
+                height={18}
+                alt="Projects"
+              />
 
               {open && (
-                <Link href="/dashboard/projects/projects">
+                <Link href="/projects">
                   <span className="text-sm font-medium">Projects</span>
                 </Link>
               )}
             </li>
 
-            {projectLinks.map((link) => {
-              const active = pathname === link.href;
+            {isProjectSelected &&
+              projectLinks.map((link) => {
+                const active = pathname === link.href;
 
-              return (
-                <li
-                  key={link.name}
-                  className={`flex items-center gap-4 py-3 rounded-md transition
+                return (
+                  <li
+                    key={link.name}
+                    className={`flex items-center gap-4 py-3 px-2 rounded-md transition
                     ${
                       !isProjectSelected
                         ? "opacity-40 cursor-not-allowed"
-                        : "hover:bg-gray-100 cursor-pointer"
+                        : "hover:bg-gray-100 px-2 cursor-pointer"
                     }
                     ${active ? "bg-white" : ""}
                   `}
-                >
-                  <Image src={link.icon} width={20} height={18} alt={link.name} />
+                  >
+                    <Image
+                      src={link.icon}
+                      width={20}
+                      height={18}
+                      alt={link.name}
+                    />
 
-                  {open &&
-                    (isProjectSelected ? (
-                      <Link href={link.href} className="text-sm">
-                        {link.name}
-                      </Link>
-                    ) : (
-                      <span className="text-sm">{link.name}</span>
-                    ))}
-                </li>
-              );
-            })}
+                    {open &&
+                      (isProjectSelected ? (
+                        <Link href={link.href} className="text-sm">
+                          {link.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm">{link.name}</span>
+                      ))}
+                  </li>
+                );
+              })}
           </ul>
 
           {!isProjectSelected && open && (
@@ -158,7 +173,6 @@ export default function Sidebar() {
         </nav>
 
         <div className="mt-auto px-2 py-5 flex flex-col gap-3">
-
           <button
             onClick={() => setOpen(!open)}
             className="hidden md:flex items-center gap-4 px-5 py-3 rounded-md hover:bg-gray-100 transition"
@@ -176,7 +190,12 @@ export default function Sidebar() {
             onClick={handleLogout}
             className="flex items-center gap-4 px-5 py-3 rounded-md hover:bg-gray-100 cursor-pointer transition"
           >
-            <Image src="/images/logout.svg" width={20} height={18} alt="logout" />
+            <Image
+              src="/images/logout.svg"
+              width={20}
+              height={18}
+              alt="logout"
+            />
             {open && <span>Logout</span>}
           </div>
 

@@ -63,11 +63,10 @@ export default function Signup() {
 
       const { user, access_token } = result;
 
-      // Redux store
       if (user) dispatch(setUser(user));
       if (access_token) dispatch(setAccessToken(access_token));
 
-      router.push("/login");
+      router.push("/projects");
     } catch (error) {
       console.log("error:", error);
     }

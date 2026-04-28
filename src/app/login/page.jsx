@@ -37,7 +37,7 @@ export default function Login() {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
           },
           body: JSON.stringify(data),
-        }
+        },
       );
 
       const result = await res.json();
@@ -47,7 +47,7 @@ export default function Login() {
         return;
       }
 
-      const { access_token, refresh_token } = result;
+      const { access_token, refresh_token, user } = result;
 
       console.log(access_token);
 
@@ -64,7 +64,7 @@ export default function Login() {
       dispatch(setAccessToken(access_token));
       dispatch(setUser(user));
 
-      router.push("/dashboard/projects/projects");
+      router.push("/projects");
     } catch (err) {
       setApiError("Something went wrong. Please try again.");
     }
@@ -94,9 +94,7 @@ export default function Login() {
           )}
 
           <div className="space-y-1">
-            <label className="text-sm text-[#8691A4] font-medium">
-              EMAIL
-            </label>
+            <label className="text-sm text-[#8691A4] font-medium">EMAIL</label>
             <input
               type="email"
               placeholder="Enter your email"
