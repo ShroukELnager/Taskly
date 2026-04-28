@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
+
 import EpicsPagination from "@/app/components/paginations/epics";
 import EmptyEpics from "@/app/components/emptyPages/epics";
 import EpicsError from "@/app/components/errorsPages/epics";
 import EpicsSkeleton from "@/app/components/skeleton/epics";
 import EpicDetailsModal from "./modale";
+
 export default function EpicsPage() {
   const { projectId } = useParams();
+  const router = useRouter();
 
   const [epics, setEpics] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,8 +28,9 @@ export default function EpicsPage() {
   const [selectedEpicId, setSelectedEpicId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [refresh, setRefresh] = useState(false);
+
   const limit = 6;
-  const router = useRouter();
 
   const fetchEpics = async () => {
     try {
@@ -34,8 +38,6 @@ export default function EpicsPage() {
       setError("");
 
       const token = Cookies.get("access_token");
-      if (!token) throw new Error("Unauthorized");
-
       const offset = (currentPage - 1) * limit;
 
       const res = await fetch(
@@ -59,7 +61,7 @@ export default function EpicsPage() {
       setEpics(data);
       setTotalCount(Number(total));
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -67,7 +69,7 @@ export default function EpicsPage() {
 
   useEffect(() => {
     fetchEpics();
-  }, [projectId, currentPage]);
+  }, [projectId, currentPage, refresh]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -92,13 +94,20 @@ export default function EpicsPage() {
     );
   });
 
+const handleUpdateEpic = (updatedEpic) => {
+  setEpics((prev) =>
+    prev.map((epic) =>
+      epic.id === updatedEpic.id ? updatedEpic : epic
+    )
+  );
+
+};
   if (loading) return <EpicsSkeleton />;
   if (error) return <EpicsError fetchEpics={fetchEpics} />;
   if (epics.length === 0) return <EmptyEpics projectId={projectId} />;
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center pb-24 sm:pb-10">
-
       <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8">
 
         {/* HEADER */}
@@ -108,28 +117,20 @@ export default function EpicsPage() {
           </h1>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-
-            <div className="relative hidden lg:block">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                <Image src="/images/search.svg" width={15} height={15} alt="search" />
-              </span>
-
-              <input
-                type="text"
-                placeholder="Search epics"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-3 py-2 rounded-md bg-[#D4DEFB] border border-blue-100 text-sm outline-none focus:ring-2 focus:ring-blue-200"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Search epics"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="hidden lg:block pl-3 pr-3 py-2 rounded-md bg-[#D4DEFB] text-sm outline-none"
+            />
 
             <button
               onClick={() =>
                 router.push(`/dashboard/projects/${projectId}/epics/create`)
               }
-              className="hidden lg:flex bg-[#014CBF] text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 items-center gap-2 whitespace-nowrap"
+              className="hidden lg:flex bg-[#014CBF] text-white px-4 py-2 rounded-md text-sm"
             >
-              <Image src="/images/plus.svg" width={18} height={18} alt="add" />
               New Epic
             </button>
           </div>
@@ -137,7 +138,6 @@ export default function EpicsPage() {
 
         {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-10">
-
           {filteredEpics.map((epic) => {
             const name =
               epic?.assignee?.name || epic?.assignee?.email || "Unassigned";
@@ -155,43 +155,36 @@ export default function EpicsPage() {
                   setSelectedEpicId(epic.id);
                   setIsModalOpen(true);
                 }}
-                className="bg-[#F9FAFB] rounded-xl p-4 shadow-sm border-l-4 border-[#014CBF] cursor-pointer hover:shadow-md transition"
+                className="bg-white rounded-xl p-4 shadow-sm cursor-pointer"
               >
-                <span className="inline-block bg-green-100 text-[#014CBF] text-xs font-medium px-2 py-1 rounded-md">
-                  {epic.epic_id || "EPIC"}
+                <span className="text-xs text-blue-600">
+                  {epic.epic_id}
                 </span>
 
-                <h2 className="mt-2 font-semibold text-gray-900 text-lg">
-                  {epic.title}
-                </h2>
+                <h2 className="mt-2 font-semibold">{epic.title}</h2>
 
                 <div className="flex items-center gap-3 mt-4">
-                  <div className="w-10 h-10 bg-[#014CBF] text-white rounded-lg flex items-center justify-center text-sm font-semibold">
+                  <div className="w-10 h-10 bg-blue-600 text-white flex items-center justify-center rounded-lg">
                     {initials}
                   </div>
 
                   <div>
                     <p className="text-xs text-gray-400">Assignee</p>
-                    <p className="text-sm font-medium text-gray-800">
-                      {name}
-                    </p>
+                    <p className="text-sm">{name}</p>
                   </div>
                 </div>
               </div>
             );
           })}
-
         </div>
 
-        <div className="px-4 pb-20">
-          <EpicsPagination
-            currentPage={currentPage}
-            totalCount={totalCount}
-            limit={limit}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-
+        {/* PAGINATION */}
+        <EpicsPagination
+          currentPage={currentPage}
+          totalCount={totalCount}
+          limit={limit}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <EpicDetailsModal
@@ -199,17 +192,17 @@ export default function EpicsPage() {
         onClose={() => setIsModalOpen(false)}
         epicId={selectedEpicId}
         projectId={projectId}
+        onUpdateEpic={handleUpdateEpic}
       />
 
       <button
         onClick={() =>
           router.push(`/dashboard/projects/${projectId}/epics/create`)
         }
-        className="lg:hidden fixed bottom-6 right-6 w-12 h-12 rounded-full bg-[#014CBF] text-white flex items-center justify-center shadow-lg z-50"
+        className="lg:hidden fixed bottom-6 right-6 w-12 h-12 rounded-full bg-[#014CBF] text-white"
       >
         +
       </button>
-
     </div>
   );
 }

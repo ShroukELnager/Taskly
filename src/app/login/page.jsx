@@ -47,11 +47,10 @@ export default function Login() {
         return;
       }
 
-      const { access_token, refresh_token, user } = result;
+      const { access_token, refresh_token } = result;
 
       console.log(access_token);
 
-      // Save tokens properly
       Cookies.set("access_token", access_token, {
         secure: true,
         sameSite: "strict",
@@ -62,7 +61,6 @@ export default function Login() {
         sameSite: "strict",
       });
 
-      // Redux store
       dispatch(setAccessToken(access_token));
       dispatch(setUser(user));
 
@@ -74,13 +72,11 @@ export default function Login() {
 
   return (
     <div className="bg-[#F9F9FF] h-screen w-screen overflow-x-hidden">
-      {/* HEADER */}
       <div className="flex items-center gap-2 p-4">
         <Image src="/images/logo.svg" width={20} height={20} alt="logo" />
         <h1 className="font-bold text-xl">TASKLY</h1>
       </div>
 
-      {/* FORM */}
       <div className="flex justify-center items-center min-h-screen px-4">
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -93,12 +89,10 @@ export default function Login() {
             </p>
           </div>
 
-          {/* API ERROR */}
           {apiError && (
             <p className="text-red-500 text-sm text-center">{apiError}</p>
           )}
 
-          {/* EMAIL */}
           <div className="space-y-1">
             <label className="text-sm text-[#8691A4] font-medium">
               EMAIL
@@ -114,7 +108,6 @@ export default function Login() {
             )}
           </div>
 
-          {/* PASSWORD */}
           <div className="space-y-1">
             <label className="text-sm text-[#8691A4] font-medium">
               PASSWORD
@@ -153,7 +146,6 @@ export default function Login() {
             {isSubmitting ? "Logging in..." : "Log In"}
           </button>
 
-          {/* SIGNUP LINK */}
           <p className="text-sm text-center">
             Don’t have an account?{" "}
             <Link href="/signup" className="text-[#014DC0] font-semibold">
