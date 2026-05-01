@@ -29,7 +29,6 @@ export default function EpicsPage() {
 
   const limit = 6;
 
-  // debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -39,7 +38,6 @@ export default function EpicsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // fetch epics
   const fetchEpics = async () => {
     try {
       setLoading(true);
