@@ -109,19 +109,12 @@ export default function EditProjectPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* ================= HEADER ================= */}
       <div className="p-4 flex justify-between items-center">
         <h1 className="font-semibold text-3xl">Edit Project</h1>
 
-        <button
-          onClick={() => router.push("/projects")}
-          className="text-gray-500 hover:text-black"
-        >
-          Cancel
-        </button>
+      
       </div>
 
-      {/* ================= FORM CONTAINER ================= */}
       <div className="flex-1 flex justify-center items-center px-4">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm overflow-hidden">
           <form
@@ -161,7 +154,6 @@ export default function EditProjectPage() {
               )}
             </div>
 
-            {/* ================= DESCRIPTION ================= */}
             <div className="flex flex-col gap-2">
               <label className="text-xs text-gray-500">Description</label>
 
