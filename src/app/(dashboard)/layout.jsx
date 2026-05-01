@@ -1,7 +1,7 @@
 "use client";
 
-import Sidebar from "../components/sidebar";
-import Navbar from "../components/navbar";
+import Sidebar from "../components/sidebar/sidebar";
+import Navbar from "../components/navbar/navbar";
 import Breadcrumbs from "../components/breadCrumb/breadCrumb";
 
 export default function Dashboardlayout({ children }) {
@@ -20,7 +20,7 @@ export default function Dashboardlayout({ children }) {
             <Navbar />
           </div>
 
-          <div className="flex-1 p-4">
+          <div className="flex-1 p-4 bg-[#F9F9FF]">
             <Breadcrumbs/>
             {children}
           </div>
