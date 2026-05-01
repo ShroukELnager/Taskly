@@ -33,7 +33,6 @@ export default function Breadcrumbs() {
 
         const project = data?.[0];
 
-        console.log("PROJECT RESPONSE:", project);
 
         if (project?.id && project?.name) {
           setProjectsMap({

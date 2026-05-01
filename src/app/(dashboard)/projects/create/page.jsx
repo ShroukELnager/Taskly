@@ -26,7 +26,6 @@ export default function Create() {
 
   const onSubmit = async (data) => {
     try {
-      console.log("SUBMIT:", data);
 
       const token = document.cookie
         .split("; ")
@@ -62,7 +61,7 @@ export default function Create() {
         console.log("No JSON response");
       }
 
-      console.log("RESULT:", result);
+      // console.log("RESULT:", result);
 
       if (!res.ok) {
         toast.error(
