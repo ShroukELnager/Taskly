@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
@@ -10,11 +10,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Cookies from "js-cookie";
 import { loginSchema } from "../components/schema/loginschema";
 import { setUser, setAccessToken } from "../lib/features/users/userSlice";
+import { getValidAccessToken } from "../api/utils/auth";
+
 
 export default function Login() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [apiError, setApiError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const {
     register,
@@ -23,6 +26,19 @@ export default function Login() {
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await getValidAccessToken();
+
+      if (token) {
+        dispatch(setAccessToken(token));
+        router.push("/projects");
+      }
+    };
+
+    checkToken();
+  }, []);
 
   const onSubmit = async (data) => {
     try {
@@ -47,24 +63,32 @@ export default function Login() {
         return;
       }
 
-      const { access_token, refresh_token } = result;
+      const {
+        access_token,
+        refresh_token,
+        user,
+        expires_at,
+      } = result;
+      console.log("TOKEN:", access_token);
 
-      console.log(access_token);
+      const expiresDate = new Date(expires_at * 1000);
 
-      Cookies.set("access_token", access_token, {
+      const cookieOptions = {
         secure: true,
         sameSite: "strict",
-      });
+        ...(rememberMe && { expires: expiresDate }),
+      };
 
-      Cookies.set("refresh_token", refresh_token, {
-        secure: true,
-        sameSite: "strict",
-      });
+      Cookies.set("access_token", access_token, cookieOptions);
+      Cookies.set("refresh_token", refresh_token, cookieOptions);
+      Cookies.set("access_token_expiry", expires_at, cookieOptions);
 
-      dispatch(setAccessToken(access_token));
+      const validToken = await getValidAccessToken();
+
+      dispatch(setAccessToken(validToken || access_token));
       dispatch(setUser(user));
 
-      router.push("/dashboard/projects/projects");
+      router.push("/projects");
     } catch (err) {
       setApiError("Something went wrong. Please try again.");
     }
@@ -94,9 +118,7 @@ export default function Login() {
           )}
 
           <div className="space-y-1">
-            <label className="text-sm text-[#8691A4] font-medium">
-              EMAIL
-            </label>
+            <label className="text-sm text-[#8691A4] font-medium">EMAIL</label>
             <input
               type="email"
               placeholder="Enter your email"
@@ -123,10 +145,14 @@ export default function Login() {
             )}
           </div>
 
-          {/* OPTIONS */}
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2">
-              <input type="checkbox" className="accent-[#014DC0]" />
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="accent-[#014DC0]"
+              />
               <span className="text-[#8691A4]">Remember me</span>
             </label>
 
@@ -138,7 +164,6 @@ export default function Login() {
             </Link>
           </div>
 
-          {/* BUTTON */}
           <button
             disabled={isSubmitting}
             className="w-full bg-[#014DC0] text-white h-12 rounded-md"
