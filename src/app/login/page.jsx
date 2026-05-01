@@ -69,6 +69,7 @@ export default function Login() {
         user,
         expires_at,
       } = result;
+      console.log("TOKEN:", access_token);
 
       const expiresDate = new Date(expires_at * 1000);
 

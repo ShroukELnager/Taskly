@@ -80,13 +80,11 @@ return (
       <h1 className="font-bold text-xl">TASKLY</h1>
     </div>
 
-    {/* CENTERED FORM */}
     <div className="flex items-center justify-center">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-md bg-white rounded-xl p-8 shadow-sm"
       >
-        {/* TITLE */}
         <h1 className="text-2xl font-bold text-[#1C274C]">
           Forgot password?
         </h1>
@@ -95,7 +93,6 @@ return (
           No worries, we’ll send you reset instructions.
         </p>
 
-        {/* EMAIL */}
         <label className="block text-xs text-gray-500 mt-6 mb-2 uppercase">
           Email Address
         </label>
@@ -107,7 +104,6 @@ return (
           {...register("email", { required: true })}
         />
 
-        {/* BUTTON */}
         <button
           type="submit"
           disabled={isSubmitting || !canResend}
@@ -124,7 +120,6 @@ return (
             : "Send Reset Link"}
         </button>
 
-        {/* BACK */}
         <div className="mt-4 text-sm text-[#0B4DBA]">
           <Link href="/login" className="flex items-center gap-1">
             <Image src="/images/back.png" alt="arrow left" width={17} height={17} />
@@ -132,7 +127,6 @@ return (
           </Link>
         </div>
 
-        {/* SUCCESS */}
         {message && (
           <div className="mt-6 bg-green-50 text-green-700 text-sm p-4 rounded-md flex items-start gap-2">
             <Image src="/images/check.png" alt="check" width={20} height={20} />
@@ -140,12 +134,10 @@ return (
           </div>
         )}
 
-        {/* ERROR */}
         {error && (
           <p className="text-red-500 text-sm mt-3 text-center">{error}</p>
         )}
 
-        {/* RESEND */}
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-400 mb-2 uppercase">
             Didn’t receive the email?

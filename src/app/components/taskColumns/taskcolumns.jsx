@@ -57,7 +57,6 @@ export default function TaskColumn({ status, projectId }) {
     );
   };
 
-  // ✅ فتح المودال
   const openTask = (taskId) => {
     setSelectedTaskId(taskId);
     setIsOpen(true);
@@ -94,7 +93,7 @@ export default function TaskColumn({ status, projectId }) {
           {tasks.map((task) => (
             <div
               key={task.task_id}
-              onClick={() => openTask(task.id)}   // ✅ فتح المودال عند الضغط
+              onClick={() => openTask(task.id)}   
               className="bg-white p-3 rounded-xl shadow-sm cursor-pointer"
             >
               <p className="text-sm font-medium mb-2">{task.title}</p>
@@ -136,7 +135,6 @@ export default function TaskColumn({ status, projectId }) {
         </div>
       )}
 
-      {/* ✅ المودال */}
       <TaskDetailsModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

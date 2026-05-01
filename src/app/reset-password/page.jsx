@@ -21,7 +21,6 @@ export default function ResetPassword() {
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  /* ================= GET TOKEN FROM URL ================= */
   useEffect(() => {
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.replace("#", ""));
@@ -36,7 +35,6 @@ export default function ResetPassword() {
     }
   }, []);
 
-  /* ================= PASSWORD RULES ================= */
   const hasLength = password.length >= 8 && password.length <= 64;
   const hasLower = /[a-z]/.test(password);
   const hasUpper = /[A-Z]/.test(password);
@@ -46,7 +44,6 @@ export default function ResetPassword() {
   const isValidPassword =
     hasLength && hasLower && hasUpper && hasDigit && hasSpecial;
 
-  /* ================= SUBMIT ================= */
   const onSubmit = async () => {
     if (!isValidPassword) {
       setErrorMsg("Password does not meet requirements");
@@ -92,7 +89,6 @@ export default function ResetPassword() {
     }
   };
 
-  /* ================= INVALID LINK ================= */
   if (!accessToken) {
     return (
       <div className="flex items-center justify-center min-h-screen text-red-500">
@@ -103,13 +99,11 @@ export default function ResetPassword() {
 
   return (
     <div className="bg-[#F9F9FF] min-h-screen px-4">
-      {/* HEADER */}
       <div className="flex items-center gap-2 p-4">
         <Image src="/images/logo.svg" width={20} height={20} alt="logo" />
         <h1 className="font-bold text-xl">TASKLY</h1>
       </div>
 
-      {/* FORM */}
       <div className="flex items-center justify-center">
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -122,7 +116,6 @@ export default function ResetPassword() {
             </p>
           </div>
 
-          {/* PASSWORD */}
           <input
             type="password"
             placeholder="Enter new password"
@@ -130,7 +123,6 @@ export default function ResetPassword() {
             {...register("password", { required: true })}
           />
 
-          {/* CONFIRM */}
           <input
             type="password"
             placeholder="Confirm password"
@@ -138,7 +130,6 @@ export default function ResetPassword() {
             {...register("confirmPassword", { required: true })}
           />
 
-          {/* RULES */}
           <div className="bg-[#EEF2FF] p-4 rounded-lg text-sm space-y-2">
             <p className="text-xs text-gray-400">SECURITY REQUIREMENTS</p>
 
@@ -159,17 +150,14 @@ export default function ResetPassword() {
             </p>
           </div>
 
-          {/* ERROR */}
           {errorMsg && (
             <p className="text-red-500 text-sm">{errorMsg}</p>
           )}
 
-          {/* SUCCESS */}
           {successMsg && (
             <p className="text-green-600 text-sm">{successMsg}</p>
           )}
 
-          {/* BUTTON */}
           <button
             type="submit"
             disabled={loading}

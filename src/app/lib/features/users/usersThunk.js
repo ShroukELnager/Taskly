@@ -8,7 +8,6 @@ export const fetchUsers = createAsyncThunk(
 
       const token = state?.users?.accessToken;
 
-      console.log("TOKEN:", token);
 
       if (!token) {
         throw new Error("No access token found");

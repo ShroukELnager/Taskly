@@ -27,7 +27,6 @@ export default function Signup() {
 
   const password = watch("password") || "";
 
-  /* password rules */
   const hasLength = password.length >= 8;
   const hasUpperLowerDigit = /(?=.*[A-Z])(?=.*[a-z])(?=.*\d)/.test(password);
   const hasSpecial = /[!@#$%^&*]/.test(password);

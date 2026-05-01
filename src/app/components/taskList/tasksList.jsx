@@ -1,55 +1,147 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Cookies from "js-cookie";
 import TaskDetailsModal from "@/app/(dashboard)/projects/[projectId]/tasks/modal";
+import Pagination from "../paginations";
 
 export default function TaskList() {
   const { projectId } = useParams();
   const router = useRouter();
-const [selectedTaskId, setSelectedTaskId] = useState(null);
-const [isOpen, setIsOpen] = useState(false);
+
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const token = Cookies.get("access_token");
 
+  const [mobilePage, setMobilePage] = useState(1);
+  const [desktopPage, setDesktopPage] = useState(1);
 
+  const limit = 5;
 
-const openTask = (taskId) => {
-  if (!taskId) return;
-  setSelectedTaskId(taskId);
-  setIsOpen(true);
-};
+  const loaderRef = useRef(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const isMobile =
+    typeof window !== "undefined" && window.innerWidth < 1024;
+
+  const page = isMobile ? mobilePage : desktopPage;
+
+  const tasksLengthRef = useRef(0);
+  const totalCountRef = useRef(0);
+
+  const [totalCount, setTotalCount] = useState(0);
+
+  const isFetchingRef = useRef(false);
+
+  const openTask = (taskId) => {
+    if (!taskId) return;
+    setSelectedTaskId(taskId);
+    setIsOpen(true);
+  };
 
   useEffect(() => {
     const fetchTasks = async () => {
+      if (isFetchingRef.current) return;
+      isFetchingRef.current = true;
+
       try {
-        setLoading(true);
+        if (page === 1) setLoading(true);
+        else setLoadingMore(true);
+
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
 
         const res = await fetch(
-          `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_tasks?project_id=eq.${projectId}`,
+          `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_tasks?project_id=eq.${projectId}&order=created_at.desc`,
           {
             headers: {
               apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
+              Prefer: "count=exact",
+              Range: `${from}-${to}`,
             },
-          },
+          }
         );
 
         const data = await res.json();
-        setTasks(data);
+        const safeData = Array.isArray(data) ? data : [];
+
+        const contentRange = res.headers.get("content-range");
+        const count = Number(contentRange?.split("/")?.[1] || 0);
+
+        setTotalCount(count);
+        totalCountRef.current = count;
+
+        // لو مفيش داتا وقف pagination
+        if (safeData.length === 0) {
+          isFetchingRef.current = false;
+          setLoading(false);
+          setLoadingMore(false);
+          return;
+        }
+
+        if (page === 1) {
+          setTasks(safeData);
+        } else {
+          setTasks((prev) => [...prev, ...safeData]);
+        }
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
+        setLoadingMore(false);
+        isFetchingRef.current = false;
       }
     };
 
     fetchTasks();
-  }, [projectId]);
+  }, [projectId, page]);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      tasksLengthRef.current = tasks.length;
+    });
+  }, [tasks]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+
+        if (!target.isIntersecting) return;
+        if (loadingMore) return;
+        if (isFetchingRef.current) return;
+
+        const total = totalCountRef.current || 0;
+        const current = tasksLengthRef.current;
+
+        const hasMore = total === 0 || current < total;
+
+        if (!hasMore) return;
+
+        setTimeout(() => {
+          setMobilePage((prev) => prev + 1);
+        }, 200);
+      },
+      {
+        rootMargin: "600px",
+      }
+    );
+
+    const el = loaderRef.current;
+    if (el) observer.observe(el);
+
+    return () => observer.disconnect();
+  }, [isMobile, loadingMore]);
 
   const goToCreateTask = () => {
     router.push(`/project/${projectId}/tasks/new`);
@@ -71,11 +163,11 @@ const openTask = (taskId) => {
           <p className="text-sm text-gray-500">Loading...</p>
         ) : (
           tasks.map((task) => (
-         <div
-  key={task.task_id}
-  onClick={() => openTask(task.id)}
-  className="bg-white p-4 rounded-xl shadow-sm cursor-pointer"
->
+            <div
+              key={task.task_id}
+              onClick={() => openTask(task.id)}
+              className="bg-white p-4 rounded-xl shadow-sm cursor-pointer"
+            >
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[10px] text-gray-400">
                   TASK-{task.task_id}
@@ -87,10 +179,10 @@ const openTask = (taskId) => {
                       task.status === "DONE"
                         ? "bg-green-100 text-green-600"
                         : task.status === "REVIEW"
-                          ? "bg-blue-100 text-blue-600"
-                          : task.status === "URGENT"
-                            ? "bg-red-100 text-red-600"
-                            : "bg-gray-100 text-gray-600"
+                        ? "bg-blue-100 text-blue-600"
+                        : task.status === "URGENT"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600"
                     }`}
                 >
                   {task.status}
@@ -118,7 +210,6 @@ const openTask = (taskId) => {
                     <span>{task.assignee?.name || "Unassigned"}</span>
                   </div>
 
-                  {/* DATE UNDER ASSIGNEE */}
                   <span className="text-[11px] text-gray-400 pl-8">
                     {task.due_date
                       ? new Date(task.due_date).toLocaleDateString("en-US", {
@@ -137,9 +228,16 @@ const openTask = (taskId) => {
             </div>
           ))
         )}
+
+        {loadingMore && (
+          <p className="text-center text-gray-400 text-sm">
+            Loading more...
+          </p>
+        )}
+
+        <div ref={loaderRef} className="h-10" />
       </div>
 
-      {/* DESKTOP (UNCHANGED) */}
       <div className="hidden lg:block bg-white rounded-xl overflow-hidden">
         <div className="grid grid-cols-6 text-sm font-semibold p-3 bg-gray-50">
           <div>Task</div>
@@ -154,11 +252,11 @@ const openTask = (taskId) => {
           <p className="p-4 text-sm text-gray-500">Loading...</p>
         ) : (
           tasks.map((task) => (
-         <div
-  key={task.task_id}
-  onClick={() => openTask(task.id)}
-  className="grid grid-cols-6 items-center p-3 border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
->
+            <div
+              key={task.task_id}
+              onClick={() => openTask(task.id)}
+              className="grid grid-cols-6 items-center p-3 border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
+            >
               <div className="text-xs text-blue-600 font-medium">
                 {task.task_id}
               </div>
@@ -209,12 +307,26 @@ const openTask = (taskId) => {
           ))
         )}
       </div>
+
       <TaskDetailsModal
-  taskId={selectedTaskId}
-  projectId={projectId}
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-/>
+        taskId={selectedTaskId}
+        projectId={projectId}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
+
+      <div className="hidden lg:block">
+        <Pagination
+          currentPage={desktopPage}
+          totalCount={totalCount}
+          limit={limit}
+          onPageChange={(page) => {
+            setTasks([]);
+            setDesktopPage(page);
+          }}
+          label="tasks"
+        />
+      </div>
     </div>
   );
 }
