@@ -71,7 +71,7 @@ export default function Breadcrumbs() {
             )}
 
             {breadcrumb.href.includes(projectId) ? (
-              <span className="text-sm font-medium text-gray-400 cursor-not-allowed">
+              <span className="text-sm font-medium text-blue-600 cursor-not-allowed">
                 {breadcrumb.label}
               </span>
             ) : index === breadcrumbs.length - 1 ? (
