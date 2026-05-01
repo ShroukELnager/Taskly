@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { useRouter, useParams } from "next/navigation";
-import Image from "next/image";
 
 import EpicsPagination from "@/app/components/paginations/epics";
 import EmptyEpics from "@/app/components/emptyPages/epics";
@@ -28,10 +27,19 @@ export default function EpicsPage() {
   const [selectedEpicId, setSelectedEpicId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [refresh, setRefresh] = useState(false);
-
   const limit = 6;
 
+  // debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // fetch epics
   const fetchEpics = async () => {
     try {
       setLoading(true);
@@ -40,28 +48,32 @@ export default function EpicsPage() {
       const token = Cookies.get("access_token");
       const offset = (currentPage - 1) * limit;
 
-      const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`,
-        {
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Prefer: "count=exact",
-          },
-        }
-      );
+      let url = `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`;
 
-      if (!res.ok) throw new Error("Failed to fetch epics");
+      if (debouncedSearch) {
+        url += `&title=ilike.%25${debouncedSearch}%25`;
+      }
+
+      const res = await fetch(url, {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Prefer: "count=exact",
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to search epics");
 
       const data = await res.json();
+
       const contentRange = res.headers.get("Content-Range");
       const total = contentRange?.split("/")[1];
 
       setEpics(data);
       setTotalCount(Number(total));
     } catch (err) {
-      setError(err.message);
+      setError("Failed to search epics");
     } finally {
       setLoading(false);
     }
@@ -69,42 +81,22 @@ export default function EpicsPage() {
 
   useEffect(() => {
     fetchEpics();
-  }, [projectId, currentPage, refresh]);
+  }, [projectId, currentPage, debouncedSearch]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const filteredEpics = epics.filter((epic) => {
-    const title = epic.title?.toLowerCase() || "";
-    const epicId = epic.epic_id?.toLowerCase() || "";
-    const assignee =
-      epic?.assignee?.name?.toLowerCase() ||
-      epic?.assignee?.email?.toLowerCase() ||
-      "";
-
-    return (
-      title.includes(debouncedSearch.toLowerCase()) ||
-      epicId.includes(debouncedSearch.toLowerCase()) ||
-      assignee.includes(debouncedSearch.toLowerCase())
+  const handleUpdateEpic = (updatedEpic) => {
+    setEpics((prev) =>
+      prev.map((epic) =>
+        epic.id === updatedEpic.id ? updatedEpic : epic
+      )
     );
-  });
+  };
 
-const handleUpdateEpic = (updatedEpic) => {
-  setEpics((prev) =>
-    prev.map((epic) =>
-      epic.id === updatedEpic.id ? updatedEpic : epic
-    )
-  );
-
-};
   if (loading) return <EpicsSkeleton />;
-  if (error) return <EpicsError fetchEpics={fetchEpics} />;
-  if (epics.length === 0) return <EmptyEpics projectId={projectId} />;
+
+  if (error)
+    return (
+      <div className="text-center text-red-500 mt-10">{error}</div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center pb-24 sm:pb-10">
@@ -117,9 +109,10 @@ const handleUpdateEpic = (updatedEpic) => {
           </h1>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+
             <input
               type="text"
-              placeholder="Search epics"
+              placeholder="Search epics..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="hidden lg:block pl-3 pr-3 py-2 rounded-md bg-[#D4DEFB] text-sm outline-none"
@@ -136,48 +129,63 @@ const handleUpdateEpic = (updatedEpic) => {
           </div>
         </div>
 
-        {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-10">
-          {filteredEpics.map((epic) => {
-            const name =
-              epic?.assignee?.name || epic?.assignee?.email || "Unassigned";
 
-            const initials = name
-              .split(" ")
-              .map((w) => w[0])
-              .join("")
-              .toUpperCase();
+          {epics.length > 0 ? (
+            epics.map((epic) => {
+              const name =
+                epic?.assignee?.name ||
+                epic?.assignee?.email ||
+                "Unassigned";
 
-            return (
-              <div
-                key={epic.id}
-                onClick={() => {
-                  setSelectedEpicId(epic.id);
-                  setIsModalOpen(true);
-                }}
-className="bg-white border-l-4 border-blue-600 rounded-xl p-4 shadow-sm cursor-pointer"              >
-                <span className="text-xs text-blue-600">
-                  {epic.epic_id}
-                </span>
+              const initials = name
+                .split(" ")
+                .map((w) => w[0])
+                .join("")
+                .toUpperCase();
 
-                <h2 className="mt-2 font-semibold">{epic.title}</h2>
+              return (
+                <div
+                  key={epic.id}
+                  onClick={() => {
+                    setSelectedEpicId(epic.id);
+                    setIsModalOpen(true);
+                  }}
+                  className="bg-white border-l-4 border-blue-600 rounded-xl p-4 shadow-sm cursor-pointer"
+                >
+                  <span className="text-xs text-blue-600">
+                    {epic.epic_id}
+                  </span>
 
-                <div className="flex items-center gap-3 mt-4">
-                  <div className="w-10 h-10 bg-blue-600 text-white flex items-center justify-center rounded-lg">
-                    {initials}
-                  </div>
+                  <h2 className="mt-2 font-semibold">
+                    {epic.title}
+                  </h2>
 
-                  <div>
-                    <p className="text-xs text-gray-400">Assignee</p>
-                    <p className="text-sm">{name}</p>
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="w-10 h-10 bg-blue-600 text-white flex items-center justify-center rounded-lg">
+                      {initials}
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-400">
+                        Assignee
+                      </p>
+                      <p className="text-sm">{name}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="col-span-full text-center mt-10 text-gray-500">
+              {debouncedSearch
+                ? "No epics found matching your search"
+                : "No epics found for this project"}
+            </div>
+          )}
+
         </div>
 
-        {/* PAGINATION */}
         <EpicsPagination
           currentPage={currentPage}
           totalCount={totalCount}
