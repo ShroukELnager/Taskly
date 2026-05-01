@@ -1,22 +1,24 @@
 "use client";
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useState, useRef, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { getValidAccessToken } from "@/app/api/utils/auth";
+import { fetchUsers } from "@/app/lib/features/users/usersThunk";
 
 export default function Navbar() {
   const user = useSelector((state) => state.users.user);
-  console.log("User in Navbar:", user);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
 
+  const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
+
   const dropdownRef = useRef();
   const router = useRouter();
 
-  const name = user?.user_metadata?.name || "No name provided";
-  const jobTitle = user?.user_metadata?.job_title || "No job title provided";
-
+  const name = user?.name || "No name provided";
+  const jobTitle = user?.jobTitle || "No job title provided";
   const email = user?.email || "No email";
 
   const initials = name
@@ -35,6 +37,18 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const syncAuth = async () => {
+      const token = await getValidAccessToken(dispatch);
+
+      if (token) {
+        dispatch(fetchUsers());
+      }
+    };
+
+    syncAuth();
+  }, [dispatch]);
 
   const handleLogout = async () => {
     try {
@@ -57,7 +71,7 @@ export default function Navbar() {
 
       Cookies.remove("access_token");
       Cookies.remove("refresh_token");
-      Cookies.remove("user");
+      Cookies.remove("access_token_expiry");
 
       router.push("/login");
     } catch (err) {
@@ -96,7 +110,10 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* logout button */}
+            {error && (
+              <p className="text-red-500 text-xs text-center">{error}</p>
+            )}
+
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 transition rounded-xl py-2 text-sm font-medium"
