@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import TaskDetailsModal from "../tasks/modal";
+import EpicModalSkeleton from "@/app/components/skeleton/epicModalSkeleton";
 
 function useDebounce(value, delay = 500) {
   const [debounced, setDebounced] = useState(value);
@@ -75,7 +76,6 @@ const openTask = (taskId) => {
       if (!res.ok) throw new Error();
 
       const data = await res.json();
-      console.log(data);
       
       setTasks(data );
     } catch (err) {
@@ -251,10 +251,9 @@ const openTask = (taskId) => {
               alt="close"
             />
           </button>
-
-          {loading ? (
-            <p className="text-center py-10">Loading...</p>
-          ) : epic ? (
+{loading ? (
+  <EpicModalSkeleton />
+) : epic ? (
             <>
               <div className="mb-6">
                 <p className="text-xs font-semibold text-blue-600 mb-1">

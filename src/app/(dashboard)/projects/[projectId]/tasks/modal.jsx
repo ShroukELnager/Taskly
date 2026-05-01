@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { getTaskDetails } from "@/app/api/getTaskDetails";
+import TaskDetailsSkeleton from "@/app/components/skeleton/taskDetailsSkeleton";
+import Image from "next/image";
 
 export default function TaskDetailsModal({
   isOpen,
@@ -33,7 +35,6 @@ export default function TaskDetailsModal({
     fetchTask();
   }, [isOpen, projectId, taskId]);
 
-  // ✅ ESC close handler
   useEffect(() => {
     if (!isOpen) return;
 
@@ -87,7 +88,6 @@ export default function TaskDetailsModal({
     className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
   />
 
-  {/* MODAL WRAPPER */}
   <div
     onClick={(e) => {
       if (e.target === e.currentTarget) {
@@ -107,8 +107,8 @@ export default function TaskDetailsModal({
       "
     >
       {loading ? (
-        <div className="p-6 text-center">Loading...</div>
-      ) : error ? (
+  <TaskDetailsSkeleton />
+) : error ? (
         <div className="p-6 text-red-500 text-center">
           Failed to load task details
         </div>
@@ -117,16 +117,20 @@ export default function TaskDetailsModal({
       ) : (
         <div className="overflow-y-auto max-h-[90vh]">
           
-          {/* HEADER (موبايل بس) */}
           <div className="p-4 border-b md:hidden">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold bg-blue-100 text-[#003D9B] px-2 py-1 rounded-md">
                 {task.task_id}
               </span>
 
-              <button onClick={onClose} className="text-gray-500 text-lg">
-                ✕
-              </button>
+            <button onClick={onClose} className="absolute right-5 top-5">
+                   <Image
+                     src="/images/close.png"
+                     width={18}
+                     height={18}
+                     alt="close"
+                   />
+                 </button>
             </div>
 
             <h2 className="text-lg font-bold">{task.title}</h2>
@@ -140,7 +144,6 @@ export default function TaskDetailsModal({
             </span>
           </div>
 
-          {/* DESKTOP LAYOUT */}
           <div className="hidden md:grid grid-cols-3">
             <div className="col-span-2 p-6">
               <div className="mb-6">
@@ -211,7 +214,6 @@ export default function TaskDetailsModal({
             </div>
           </div>
 
-          {/* MOBILE LAYOUT */}
           <div className="p-4 space-y-4 md:hidden">
             <div className="grid grid-cols-2 gap-3">
               <MobileCard label="ASSIGNEE">
@@ -238,7 +240,6 @@ export default function TaskDetailsModal({
             </MobileCard>
           </div>
 
-          {/* FOOTER */}
           <div className="flex justify-center p-4 bg-[#F1F3FF]">
             <button
               onClick={onClose}
