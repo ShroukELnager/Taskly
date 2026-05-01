@@ -1,3 +1,5 @@
+import { setAccessToken } from "@/app/lib/features/users/userSlice";
+import { fetchUsers } from "@/app/lib/features/users/usersThunk";
 import Cookies from "js-cookie";
 
 const BASE_URL = "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1/token";
@@ -52,11 +54,18 @@ export const refreshAccessToken = async () => {
   }
 };
 
-export const getValidAccessToken = async () => {
+// ✅ هنا التعديل المهم
+export const getValidAccessToken = async (dispatch) => {
   let token = Cookies.get("access_token");
 
   if (!token || isTokenExpired()) {
     token = await refreshAccessToken();
+
+    // 👇 أهم سطرين
+    if (token && dispatch) {
+      dispatch(setAccessToken(token));
+      dispatch(fetchUsers()); // عشان Navbar يتحدث
+    }
   }
 
   return token;
