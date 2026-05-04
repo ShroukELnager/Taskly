@@ -60,8 +60,8 @@ export default function Login() {
     },
 
     onError: (err) => {
-    setErrorMsg(err.message || "Something went wrong");
-  },
+      setApiError(err?.error_description || "Invalid email or password");
+    },
   });
 
   useEffect(() => {

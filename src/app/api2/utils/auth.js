@@ -23,7 +23,7 @@ export const refreshAccessToken = async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        apikey: process.env.API_KEY,
       },
       body: JSON.stringify({ refresh_token }),
     });

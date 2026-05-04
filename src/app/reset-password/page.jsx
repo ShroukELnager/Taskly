@@ -7,8 +7,6 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "../services/auth.service";
 
-const API_KEY = process.env.API_KEY;
-const BASE_URL = process.env.BASE_URL;
 
 export default function ResetPassword() {
   const router = useRouter();
