@@ -7,13 +7,12 @@ import React, { useState } from "react";
 export default function Tasks() {
   const [view, setView] = useState("board");
   const [open, setOpen] = useState(false);
-
+const [search, setSearch] = useState("");
   return (
     <>
       <div className="max-w-5xl px-2">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
   
-  {/* TITLE */}
   <div className="text-center lg:text-left w-full">
     <h1 className="text-xl font-semibold">
       Active Workboard
@@ -35,6 +34,8 @@ export default function Tasks() {
       />
       <input
         placeholder="Search tasks"
+        value={search}
+  onChange={(e) => setSearch(e.target.value)}
         className="bg-transparent outline-none ml-2 text-sm w-full"
       />
     </div>
@@ -107,7 +108,7 @@ export default function Tasks() {
       </div>
 
       <div className="hidden lg:block">
-        {view === "board" ? <TaskBoard /> : <TaskList />}
+        {view === "board" ? <TaskBoard search={search}/> : <TaskList search={search} />}
       </div>
     </>
   );

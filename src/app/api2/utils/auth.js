@@ -1,7 +1,6 @@
-import { setAccessToken } from "@/app/lib/features/users/userSlice";
-import { fetchUsers } from "@/app/lib/features/users/usersThunk";
+import { setAccessToken } from "@/app/features/users/userSlice";
 import Cookies from "js-cookie";
-
+import { fetchUsers } from "@/app/features/users/usersThunk";
 const BASE_URL = "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1/token";
 
 export const isTokenExpired = () => {
@@ -54,17 +53,15 @@ export const refreshAccessToken = async () => {
   }
 };
 
-// ✅ هنا التعديل المهم
 export const getValidAccessToken = async (dispatch) => {
   let token = Cookies.get("access_token");
 
   if (!token || isTokenExpired()) {
     token = await refreshAccessToken();
 
-    // 👇 أهم سطرين
     if (token && dispatch) {
       dispatch(setAccessToken(token));
-      dispatch(fetchUsers()); // عشان Navbar يتحدث
+      dispatch(fetchUsers());
     }
   }
 

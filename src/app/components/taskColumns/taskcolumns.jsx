@@ -2,16 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchTasksByStatus } from "@/app/api/fetchTasks";
+import { fetchTasksByStatus } from "@/app/api2/fetchTasks";
 import Image from "next/image";
 import TaskDetailsModal from "@/app/(dashboard)/projects/[projectId]/tasks/modal";
+import { useDroppable } from "@dnd-kit/core";
+import TaskCard from "../taskCart";
+import { useDebounce } from "@/app/hooks/useDebounce";
 
-export default function TaskColumn({ status, projectId }) {
+export default function TaskColumn({ status, projectId, search }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+
+  const router = useRouter();
+
+  // ✅ debounce search
+  const debouncedSearch = useDebounce(search, 400);
 
   const STATUS_STYLES = {
     TO_DO: "bg-gray-400 text-gray-600",
@@ -24,19 +32,27 @@ export default function TaskColumn({ status, projectId }) {
     DONE: "bg-green-500 text-green-600",
   };
 
-  const router = useRouter();
+  const { setNodeRef } = useDroppable({
+    id: status,
+  });
 
+  // =========================
+  // FETCH TASKS (WITH DEBOUNCE)
+  // =========================
   useEffect(() => {
     let ignore = false;
 
     async function loadTasks() {
       try {
         setLoading(true);
-        const data = await fetchTasksByStatus(projectId, status);
 
-        if (!ignore) {
-          setTasks(data);
-        }
+        const data = await fetchTasksByStatus(
+          projectId,
+          status,
+          debouncedSearch, // ✅ مهم جدًا
+        );
+
+        if (!ignore) setTasks(data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -49,8 +65,11 @@ export default function TaskColumn({ status, projectId }) {
     return () => {
       ignore = true;
     };
-  }, [projectId, status]);
+  }, [projectId, status, debouncedSearch]);
 
+  // =========================
+  // CREATE TASK
+  // =========================
   const goToCreate = () => {
     router.push(
       `/projects/${projectId}/tasks/create?status=${encodeURIComponent(status)}`,
@@ -63,78 +82,55 @@ export default function TaskColumn({ status, projectId }) {
   };
 
   return (
-    <div className="min-w-[270px] flex flex-col">
+    <div ref={setNodeRef} className="min-w-[270px] flex flex-col">
+      {/* HEADER */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-xs font-semibold text-gray-600">
           <span
-            className={`w-2 h-2 rounded-full ${STATUS_STYLES[status]?.split(" ")[0]}`}
-          ></span>{" "}
+            className={`w-2 h-2 rounded-full ${
+              STATUS_STYLES[status]?.split(" ")[0]
+            }`}
+          />
           {status}
+
           <span className="bg-gray-200 px-2 py-0.5 rounded text-[10px]">
             {tasks.length}
           </span>
         </div>
 
-        <button onClick={goToCreate}>+</button>
+        <button
+          onClick={goToCreate}
+          className="w-7 h-7 flex items-center justify-center rounded-md 
+                     bg-gray-100 hover:bg-gray-200 text-lg font-bold"
+        >
+          +
+        </button>
       </div>
 
+      {/* ADD TASK */}
       <div
         onClick={goToCreate}
-        className="border border-dashed rounded-lg py-3 flex items-center justify-center gap-2 text-xs text-gray-400 mb-3 cursor-pointer hover:bg-gray-100"
+        className="border border-dashed rounded-lg py-3 
+                   flex items-center justify-center gap-2 
+                   text-xs text-gray-400 mb-3 cursor-pointer 
+                   hover:bg-gray-50 transition"
       >
         <Image src="/images/Cplus.png" width={16} height={16} alt="Add Task" />
-        <span>ADD NEW TASK</span>
+        <span className="font-medium">ADD NEW TASK</span>
       </div>
 
+      {/* TASKS */}
       {loading ? (
         <div className="text-xs text-gray-400">Loading...</div>
       ) : (
         <div className="flex flex-col gap-3">
           {tasks.map((task) => (
-            <div
-              key={task.task_id}
-              onClick={() => openTask(task.id)}   
-              className="bg-white p-3 rounded-xl shadow-sm cursor-pointer"
-            >
-              <p className="text-sm font-medium mb-2">{task.title}</p>
-
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                {task.due_date && (
-                  <span className="flex items-center gap-1 text-xs text-gray-500">
-                    <Image
-                      src="/images/date.png"
-                      alt="Calendar"
-                      width={12}
-                      height={12}
-                    />
-                    {new Date(task.due_date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
-                )}
-
-                {task.status === "BLOCKED" && (
-                  <span className="text-red-500">
-                    <Image
-                      src="/images/block.png"
-                      width={12}
-                      height={12}
-                      alt="Warning"
-                    />{" "}
-                    DELAYED
-                  </span>
-                )}
-
-                <span className="bg-blue-500 w-6 h-6 flex items-center justify-center rounded-full text-[10px] text-white font-bold">
-                  {task.assignee.name?.slice(0, 2)}
-                </span>
-              </div>
-            </div>
+            <TaskCard key={task.task_id} task={task} openTask={openTask} />
           ))}
         </div>
       )}
 
+      {/* MODAL */}
       <TaskDetailsModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

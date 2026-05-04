@@ -4,24 +4,22 @@ import { useEffect, useState, useRef } from "react";
 import Cookies from "js-cookie";
 import { useRouter, useParams } from "next/navigation";
 
-import EmptyEpics from "@/app/components/emptyPages/epics";
-import EpicsError from "@/app/components/errorsPages/epics";
 import EpicsSkeleton from "@/app/components/skeleton/epics";
 import EpicDetailsModal from "./modale";
 import Pagination from "@/app/components/paginations";
+import { useDebounce } from "@/app/hooks/useDebounce";
 
 export default function EpicsPage() {
   const { projectId } = useParams();
   const router = useRouter();
 
   const [loadingMore, setLoadingMore] = useState(false);
-
   const [epics, setEpics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 400);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -34,21 +32,15 @@ export default function EpicsPage() {
   const loaderRef = useRef(null);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setCurrentPage(1);
-      setEpics([]);
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const fetchEpics = async (page = currentPage, append = false) => {
+  // =========================
+  // FETCH EPICS
+  // =========================
+  const fetchEpics = async (page = 1, append = false, searchValue = "") => {
     try {
-      setLoading(true);
-      setError("");
+      if (!projectId) return;
 
+      setError("");
+      if (!append) setLoading(true);
       if (append) setLoadingMore(true);
 
       const token = Cookies.get("access_token");
@@ -56,8 +48,8 @@ export default function EpicsPage() {
 
       let url = `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`;
 
-      if (debouncedSearch) {
-        url += `&title=ilike.%25${debouncedSearch}%25`;
+      if (searchValue) {
+        url += `&title=ilike.%25${searchValue}%25`;
       }
 
       const res = await fetch(url, {
@@ -69,7 +61,7 @@ export default function EpicsPage() {
         },
       });
 
-      if (!res.ok) throw new Error("Failed to search epics");
+      if (!res.ok) throw new Error("Failed to fetch epics");
 
       const data = await res.json();
 
@@ -84,48 +76,64 @@ export default function EpicsPage() {
         setEpics(data);
       }
     } catch (err) {
-      setError("Failed to search epics");
+      setError("Failed to fetch epics");
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   };
 
+  // =========================
+  // RESET WHEN SEARCH CHANGES
+  // =========================
   useEffect(() => {
-    fetchEpics();
+    setCurrentPage(1);
+    setEpics([]);
+  }, [debouncedSearch]);
+
+  // =========================
+  // FETCH ON CHANGE
+  // =========================
+  useEffect(() => {
+    fetchEpics(currentPage, false, debouncedSearch);
   }, [projectId, currentPage, debouncedSearch]);
 
+  // =========================
+  // UPDATE EPIC
+  // =========================
   const handleUpdateEpic = (updatedEpic) => {
     setEpics((prev) =>
       prev.map((epic) => (epic.id === updatedEpic.id ? updatedEpic : epic)),
     );
   };
 
+  // =========================
+  // INFINITE SCROLL (MOBILE)
+  // =========================
   useEffect(() => {
     if (!isMobile) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          const nextPage = currentPage + 1;
-          const hasMore = epics.length < totalCount;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        const nextPage = currentPage + 1;
 
-          if (hasMore && !loadingMore) {
-            setCurrentPage(nextPage);
-            fetchEpics(nextPage, true);
-          }
+        const hasMore = epics.length < totalCount && !debouncedSearch;
+
+        if (hasMore && !loadingMore) {
+          setCurrentPage(nextPage);
+          fetchEpics(nextPage, true, debouncedSearch);
         }
-      },
-      { threshold: 1 },
-    );
+      }
+    });
 
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
+    if (loaderRef.current) observer.observe(loaderRef.current);
 
     return () => observer.disconnect();
-  }, [currentPage, epics, totalCount, debouncedSearch, loadingMore]);
+  }, [currentPage, epics, totalCount, loadingMore, debouncedSearch]);
 
+  // =========================
+  // LOADING STATE
+  // =========================
   if (loading && epics.length === 0) return <EpicsSkeleton />;
 
   if (error)
@@ -135,22 +143,24 @@ export default function EpicsPage() {
     <div className="min-h-screen bg-gray-50 flex justify-center pb-24 sm:pb-10">
       <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6 pt-4">
+          {/* LEFT */}
           <h1 className="text-2xl font-semibold hidden lg:block">
             Project Epics
           </h1>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          {/* RIGHT */}
+          <div className="flex items-center gap-3 ml-auto">
             <input
               type="text"
-              placeholder="Search epics..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="hidden lg:block pl-3 pr-3 py-2 rounded-md bg-[#D4DEFB] text-sm outline-none"
+              placeholder="Search epics..."
+              className="pl-3 pr-3 py-2 rounded-md bg-[#D4DEFB] text-sm outline-none w-48 lg:w-64"
             />
 
             <button
               onClick={() => router.push(`/projects/${projectId}/epics/create`)}
-              className="hidden lg:flex bg-[#014CBF] text-white px-4 py-2 rounded-md text-sm"
+              className="bg-[#014CBF] text-white px-4 py-2 rounded-md text-sm whitespace-nowrap"
             >
               + New Epic
             </button>
@@ -197,13 +207,12 @@ export default function EpicsPage() {
             })
           ) : (
             <div className="col-span-full text-center mt-10 text-gray-500">
-              {debouncedSearch
-                ? "No epics found matching your search"
-                : "No epics found for this project"}
+              No epics found for this project
             </div>
           )}
         </div>
 
+        {/* PAGINATION */}
         <div className="hidden lg:block">
           <Pagination
             currentPage={currentPage}
@@ -221,6 +230,7 @@ export default function EpicsPage() {
         <div ref={loaderRef} className="h-10" />
       </div>
 
+      {/* MODAL */}
       <EpicDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -229,6 +239,7 @@ export default function EpicsPage() {
         onUpdateEpic={handleUpdateEpic}
       />
 
+      {/* FLOAT BUTTON */}
       <button
         onClick={() => router.push(`/projects/${projectId}/epics/create`)}
         className="lg:hidden fixed bottom-6 right-6 w-12 h-12 rounded-full bg-[#014CBF] text-white"

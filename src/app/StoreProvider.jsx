@@ -2,8 +2,8 @@
 
 import { useRef } from "react";
 import { Provider } from "react-redux";
-import { makeStore } from "./lib/store";
-import { setAccessToken } from "./lib/features/users/userSlice";
+import { makeStore } from "./store/store";
+import { setAccessToken } from "./features/users/userSlice";
 
 export default function StoreProvider({ children, accessToken }) {
   const storeRef = useRef(null);

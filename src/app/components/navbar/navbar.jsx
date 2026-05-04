@@ -4,9 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useState, useRef, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import { getValidAccessToken } from "@/app/api/utils/auth";
-import { fetchUsers } from "@/app/lib/features/users/usersThunk";
-
+import { getValidAccessToken } from "@/app/api2/utils/auth";
+import { fetchUsers } from "@/app/features/users/usersThunk";
 export default function Navbar() {
   const user = useSelector((state) => state.users.user);
   const dispatch = useDispatch();

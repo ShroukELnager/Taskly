@@ -6,8 +6,9 @@ import Image from "next/image";
 import Cookies from "js-cookie";
 import TaskDetailsModal from "@/app/(dashboard)/projects/[projectId]/tasks/modal";
 import Pagination from "../paginations";
+import { useDebounce } from "@/app/hooks/useDebounce";
 
-export default function TaskList() {
+export default function TaskList({ search }) {
   const { projectId } = useParams();
   const router = useRouter();
 
@@ -24,20 +25,15 @@ export default function TaskList() {
 
   const limit = 5;
 
-  const loaderRef = useRef(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  const isMobile =
-    typeof window !== "undefined" && window.innerWidth < 1024;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
 
   const page = isMobile ? mobilePage : desktopPage;
-
-  const tasksLengthRef = useRef(0);
-  const totalCountRef = useRef(0);
 
   const [totalCount, setTotalCount] = useState(0);
 
   const isFetchingRef = useRef(false);
+
+  const debouncedSearch = useDebounce(search, 500);
 
   const openTask = (taskId) => {
     if (!taskId) return;
@@ -45,103 +41,60 @@ export default function TaskList() {
     setIsOpen(true);
   };
 
+  // reset عند search
   useEffect(() => {
-    const fetchTasks = async () => {
-      if (isFetchingRef.current) return;
-      isFetchingRef.current = true;
+    setTasks([]);
+    setMobilePage(1);
+    setDesktopPage(1);
+  }, [debouncedSearch, projectId]);
 
-      try {
-        if (page === 1) setLoading(true);
-        else setLoadingMore(true);
+  const fetchTasks = async () => {
+    if (isFetchingRef.current) return;
 
-        const from = (page - 1) * limit;
-        const to = from + limit - 1;
+    isFetchingRef.current = true;
 
-        const res = await fetch(
-          `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_tasks?project_id=eq.${projectId}&order=created_at.desc`,
-          {
-            headers: {
-              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-              Prefer: "count=exact",
-              Range: `${from}-${to}`,
-            },
-          }
-        );
+    try {
+      setLoading(true);
 
-        const data = await res.json();
-        const safeData = Array.isArray(data) ? data : [];
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
 
-        const contentRange = res.headers.get("content-range");
-        const count = Number(contentRange?.split("/")?.[1] || 0);
+      let url = `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_tasks?project_id=eq.${projectId}&order=created_at.desc`;
 
-        setTotalCount(count);
-        totalCountRef.current = count;
-
-        // لو مفيش داتا وقف pagination
-        if (safeData.length === 0) {
-          isFetchingRef.current = false;
-          setLoading(false);
-          setLoadingMore(false);
-          return;
-        }
-
-        if (page === 1) {
-          setTasks(safeData);
-        } else {
-          setTasks((prev) => [...prev, ...safeData]);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-        isFetchingRef.current = false;
+      if (debouncedSearch) {
+        url += `&title=ilike.%25${debouncedSearch}%25`;
       }
-    };
 
+      const res = await fetch(url, {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Prefer: "count=exact",
+          Range: `${from}-${to}`,
+        },
+      });
+
+      const data = await res.json();
+      const safeData = Array.isArray(data) ? data : [];
+
+      const contentRange = res.headers.get("content-range");
+      const count = Number(contentRange?.split("/")?.[1] || 0);
+
+      setTotalCount(count);
+
+      setTasks(safeData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+      isFetchingRef.current = false;
+    }
+  };
+
+  useEffect(() => {
     fetchTasks();
-  }, [projectId, page]);
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      tasksLengthRef.current = tasks.length;
-    });
-  }, [tasks]);
-
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const target = entries[0];
-
-        if (!target.isIntersecting) return;
-        if (loadingMore) return;
-        if (isFetchingRef.current) return;
-
-        const total = totalCountRef.current || 0;
-        const current = tasksLengthRef.current;
-
-        const hasMore = total === 0 || current < total;
-
-        if (!hasMore) return;
-
-        setTimeout(() => {
-          setMobilePage((prev) => prev + 1);
-        }, 200);
-      },
-      {
-        rootMargin: "600px",
-      }
-    );
-
-    const el = loaderRef.current;
-    if (el) observer.observe(el);
-
-    return () => observer.disconnect();
-  }, [isMobile, loadingMore]);
+  }, [projectId, page, debouncedSearch]);
 
   const goToCreateTask = () => {
     router.push(`/project/${projectId}/tasks/new`);
@@ -158,6 +111,7 @@ export default function TaskList() {
         </button>
       </div>
 
+      {/* MOBILE */}
       <div className="lg:hidden space-y-4">
         {loading ? (
           <p className="text-sm text-gray-500">Loading...</p>
@@ -173,18 +127,7 @@ export default function TaskList() {
                   TASK-{task.task_id}
                 </span>
 
-                <span
-                  className={`text-[10px] px-2 py-1 rounded font-semibold
-                    ${
-                      task.status === "DONE"
-                        ? "bg-green-100 text-green-600"
-                        : task.status === "REVIEW"
-                        ? "bg-blue-100 text-blue-600"
-                        : task.status === "URGENT"
-                        ? "bg-red-100 text-red-600"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
-                >
+                <span className="text-[10px] px-2 py-1 rounded bg-blue-100 text-blue-600">
                   {task.status}
                 </span>
               </div>
@@ -192,52 +135,12 @@ export default function TaskList() {
               <h3 className="text-sm font-semibold text-gray-800 mb-3">
                 {task.title}
               </h3>
-
-              <div className="flex justify-between items-start text-xs text-gray-500">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center">
-                      {task.assignee?.name
-                        ? task.assignee.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)
-                            .toUpperCase()
-                        : "UN"}
-                    </div>
-
-                    <span>{task.assignee?.name || "Unassigned"}</span>
-                  </div>
-
-                  <span className="text-[11px] text-gray-400 pl-8">
-                    {task.due_date
-                      ? new Date(task.due_date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "2-digit",
-                          year: "numeric",
-                        })
-                      : "-"}
-                  </span>
-                </div>
-
-                <span className="text-lg mr-4 leading-none cursor-pointer">
-                  ...
-                </span>
-              </div>
             </div>
           ))
         )}
-
-        {loadingMore && (
-          <p className="text-center text-gray-400 text-sm">
-            Loading more...
-          </p>
-        )}
-
-        <div ref={loaderRef} className="h-10" />
       </div>
 
+      {/* DESKTOP */}
       <div className="hidden lg:block bg-white rounded-xl overflow-hidden">
         <div className="grid grid-cols-6 text-sm font-semibold p-3 bg-gray-50">
           <div>Task</div>
@@ -269,37 +172,14 @@ export default function TaskList() {
                 </span>
               </div>
 
-              <div className="text-xs text-gray-600 flex items-center gap-1">
-                <Image
-                  src="/images/date.png"
-                  alt="date"
-                  width={12}
-                  height={12}
-                />
+              <div className="text-xs text-gray-600">
                 {task.due_date
-                  ? new Date(task.due_date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "2-digit",
-                      year: "numeric",
-                    })
+                  ? new Date(task.due_date).toLocaleDateString()
                   : "-"}
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center">
-                  {task.assignee?.name
-                    ? task.assignee.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .slice(0, 2)
-                        .toUpperCase()
-                    : "UN"}
-                </div>
-
-                <span className="text-xs text-gray-600">
-                  {task.assignee?.name || "Unassigned"}
-                </span>
+              <div className="text-xs text-gray-600">
+                {task.assignee?.name || "Unassigned"}
               </div>
 
               <div className="flex justify-end">...</div>
@@ -308,25 +188,24 @@ export default function TaskList() {
         )}
       </div>
 
+      {/* 🔥 Pagination بقى شغال للموبايل والديسكتوب */}
+      <Pagination
+        currentPage={page}
+        totalCount={totalCount}
+        limit={limit}
+        onPageChange={(p) => {
+          setTasks([]);
+          isMobile ? setMobilePage(p) : setDesktopPage(p);
+        }}
+        label="tasks"
+      />
+
       <TaskDetailsModal
         taskId={selectedTaskId}
         projectId={projectId}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       />
-
-      <div className="hidden lg:block">
-        <Pagination
-          currentPage={desktopPage}
-          totalCount={totalCount}
-          limit={limit}
-          onPageChange={(page) => {
-            setTasks([]);
-            setDesktopPage(page);
-          }}
-          label="tasks"
-        />
-      </div>
     </div>
   );
 }

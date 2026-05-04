@@ -4,9 +4,11 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { resetPassword } from "../services/auth.service";
 
-const API_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const API_KEY = process.env.API_KEY;
+const BASE_URL = process.env.BASE_URL;
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -19,7 +21,6 @@ export default function ResetPassword() {
   const [accessToken, setAccessToken] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -43,8 +44,25 @@ export default function ResetPassword() {
 
   const isValidPassword =
     hasLength && hasLower && hasUpper && hasDigit && hasSpecial;
+const mutation = useMutation({
+  mutationFn: resetPassword,
 
-  const onSubmit = async () => {
+  onSuccess: () => {
+    setSuccessMsg(
+      "Your password has been updated successfully. You can now log in"
+    );
+
+    setTimeout(() => {
+      router.push("/login");
+    }, 3000);
+  },
+
+  onError: (err) => {
+    setErrorMsg(err.message || "Something went wrong");
+  },
+});
+
+  const onSubmit = () => {
     if (!isValidPassword) {
       setErrorMsg("Password does not meet requirements");
       return;
@@ -55,38 +73,12 @@ export default function ResetPassword() {
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMsg("");
+    setErrorMsg("");
 
-      const res = await fetch(`${BASE_URL}/auth/v1/user`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          apikey: API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          password,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to reset password");
-      }
-
-      setSuccessMsg(
-        "Your password has been updated successfully. You can now log in"
-      );
-
-      setTimeout(() => {
-        router.push("/login");
-      }, 3000);
-    } catch (err) {
-      setErrorMsg(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
+    mutation.mutate({
+      password,
+      accessToken,
+    });
   };
 
   if (!accessToken) {
@@ -130,6 +122,7 @@ export default function ResetPassword() {
             {...register("confirmPassword", { required: true })}
           />
 
+          {/* requirements */}
           <div className="bg-[#EEF2FF] p-4 rounded-lg text-sm space-y-2">
             <p className="text-xs text-gray-400">SECURITY REQUIREMENTS</p>
 
@@ -150,20 +143,22 @@ export default function ResetPassword() {
             </p>
           </div>
 
+          {/* errors */}
           {errorMsg && (
             <p className="text-red-500 text-sm">{errorMsg}</p>
           )}
 
+          {/* success */}
           {successMsg && (
             <p className="text-green-600 text-sm">{successMsg}</p>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={mutation.isPending}
             className="w-full h-12 bg-[#014DC0] text-white rounded-lg"
           >
-            {loading ? "Updating..." : "Update Password"}
+            {mutation.isPending ? "Updating..." : "Update Password"}
           </button>
         </form>
       </div>

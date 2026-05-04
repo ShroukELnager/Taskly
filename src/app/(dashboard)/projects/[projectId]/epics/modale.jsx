@@ -76,6 +76,7 @@ const openTask = (taskId) => {
       if (!res.ok) throw new Error();
 
       const data = await res.json();
+      console.log(data);
       
       setTasks(data );
     } catch (err) {

@@ -8,67 +8,35 @@ import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Cookies from "js-cookie";
-import { loginSchema } from "../components/schema/loginschema";
-import { setUser, setAccessToken } from "../lib/features/users/userSlice";
-import { getValidAccessToken } from "../api/utils/auth";
+import { useMutation } from "@tanstack/react-query";
 
+import { loginSchema } from "../components/schema/loginschema";
+
+import { getValidAccessToken } from "../api2/utils/auth";
+import { login } from "../services/auth.service"; 
+import { setAccessToken, setUser } from "../features/users/userSlice";
 
 export default function Login() {
   const router = useRouter();
   const dispatch = useDispatch();
+
   const [apiError, setApiError] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
   });
 
-  useEffect(() => {
-    const checkToken = async () => {
-      const token = await getValidAccessToken();
+  const mutation = useMutation({
+    mutationFn: login,
 
-      if (token) {
-        dispatch(setAccessToken(token));
-        router.push("/projects");
-      }
-    };
+    onSuccess: async (result) => {
+      const { access_token, refresh_token, user, expires_at } = result;
 
-    checkToken();
-  }, []);
-
-  const onSubmit = async (data) => {
-    try {
-      setApiError("");
-
-      const res = await fetch(
-        "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1/token?grant_type=password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify(data),
-        }
-      );
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        setApiError(result.error_description || "Invalid email or password");
-        return;
-      }
-
-      const {
-        access_token,
-        refresh_token,
-        user,
-        expires_at,
-      } = result;
       console.log("TOKEN:", access_token);
 
       const expiresDate = new Date(expires_at * 1000);
@@ -89,9 +57,29 @@ export default function Login() {
       dispatch(setUser(user));
 
       router.push("/projects");
-    } catch (err) {
-      setApiError("Something went wrong. Please try again.");
-    }
+    },
+
+    onError: (err) => {
+      setApiError(err?.error_description || "Invalid email or password");
+    },
+  });
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await getValidAccessToken();
+
+      if (token) {
+        dispatch(setAccessToken(token));
+        router.push("/projects");
+      }
+    };
+
+    checkToken();
+  }, []);
+
+  const onSubmit = (data) => {
+    setApiError("");
+    mutation.mutate(data);
   };
 
   return (
@@ -118,12 +106,13 @@ export default function Login() {
           )}
 
           <div className="space-y-1">
-            <label className="text-sm text-[#8691A4] font-medium">EMAIL</label>
+            <label className="text-sm text-[#8691A4] font-medium">
+              EMAIL
+            </label>
             <input
               type="email"
-              placeholder="Enter your email"
               {...register("email")}
-              className="w-full h-12 px-3 rounded-md border bg-[#D7E2FF] focus:ring-2 focus:ring-blue-500"
+              className="w-full h-12 px-3 rounded-md border bg-[#D7E2FF]"
             />
             {errors.email && (
               <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -136,12 +125,13 @@ export default function Login() {
             </label>
             <input
               type="password"
-              placeholder="Minimum 8 characters"
               {...register("password")}
-              className="w-full h-12 px-3 rounded-md border bg-[#D7E2FF] focus:ring-2 focus:ring-blue-500"
+              className="w-full h-12 px-3 rounded-md border bg-[#D7E2FF]"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
+              <p className="text-red-500 text-sm">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -151,24 +141,20 @@ export default function Login() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="accent-[#014DC0]"
               />
               <span className="text-[#8691A4]">Remember me</span>
             </label>
 
-            <Link
-              href="/forgot-password"
-              className="text-[#014DC0] font-medium"
-            >
+            <Link href="/forgot-password" className="text-[#014DC0]">
               Forgot password?
             </Link>
           </div>
 
           <button
-            disabled={isSubmitting}
+            disabled={mutation.isPending}
             className="w-full bg-[#014DC0] text-white h-12 rounded-md"
           >
-            {isSubmitting ? "Logging in..." : "Log In"}
+            {mutation.isPending ? "Logging in..." : "Log In"}
           </button>
 
           <p className="text-sm text-center">

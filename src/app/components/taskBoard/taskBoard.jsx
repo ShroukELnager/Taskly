@@ -1,8 +1,9 @@
 "use client";
 
 import TaskColumn from "@/app/components/taskColumns/taskcolumns";
-import Image from "next/image";
 import { useParams } from "next/navigation";
+import { DndContext } from "@dnd-kit/core";
+import Cookies from "js-cookie";
 import { useState } from "react";
 
 const STATUSES = [
@@ -16,20 +17,59 @@ const STATUSES = [
   "DONE",
 ];
 
-export default function TaskBoard() {
+export default function TaskBoard({ search }) {
   const { projectId } = useParams();
 
-  return (
-    <div className="p-2 bg-[#F9F9FF] min-h-screen">
-      <div className="max-w-5xl  px-4">
-       
-      </div>
+  const [refreshKey, setRefreshKey] = useState(0);
 
-      <div className="flex gap-4 overflow-x-auto">
-        {STATUSES.map((status) => (
-          <TaskColumn key={status} status={status} projectId={projectId} />
-        ))}
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    const taskId = active.id;
+    const newStatus = over.id;
+
+    try {
+      const token = Cookies.get("access_token");
+
+      await fetch(
+        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/tasks?id=eq.${taskId}`,
+        {
+          method: "PATCH",
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      // refresh board after move
+      setRefreshKey((p) => p + 1);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="p-2 bg-[#F9F9FF] min-h-screen overflow-x-auto">
+        <div className="flex gap-4">
+
+          {STATUSES.map((status) => (
+            <TaskColumn
+              key={status + refreshKey}
+              status={status}
+              projectId={projectId}
+              search={search}   // 👈 مهم جدًا
+            />
+          ))}
+
+        </div>
       </div>
-    </div>
+    </DndContext>
   );
 }

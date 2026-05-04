@@ -7,10 +7,11 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SignupSchema } from "../components/schema/signupSchema";
-import { setAccessToken, setUser } from "../lib/features/users/userSlice";
+import { useMutation } from "@tanstack/react-query";
 
-const apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { SignupSchema } from "../components/schema/signupSchema";
+import { setAccessToken, setUser } from "../features/users/userSlice";
+import { signup } from "../services/auth.service";
 
 export default function Signup() {
   const router = useRouter();
@@ -31,32 +32,14 @@ export default function Signup() {
   const hasUpperLowerDigit = /(?=.*[A-Z])(?=.*[a-z])(?=.*\d)/.test(password);
   const hasSpecial = /[!@#$%^&*]/.test(password);
 
-  const onSubmit = async (data) => {
-    try {
-      const res = await fetch(
-        "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password,
-            data: {
-              name: data.name,
-              job_title: data.jobTitle,
-            },
-          }),
-        }
-      );
+  const mutation = useMutation({
+    mutationFn: signup,
 
-      const result = await res.json();
+    onSuccess: (result) => {
       console.log("result:", result);
 
-      if (!res.ok) {
-        console.log("Error:", result.error_description);
+      if (!result?.user) {
+        console.log("Error:", result?.error_description);
         return;
       }
 
@@ -66,9 +49,15 @@ export default function Signup() {
       if (access_token) dispatch(setAccessToken(access_token));
 
       router.push("/projects");
-    } catch (error) {
+    },
+
+    onError: (error) => {
       console.log("error:", error);
-    }
+    },
+  });
+
+  const onSubmit = (data) => {
+    mutation.mutate(data);
   };
 
   return (
@@ -92,11 +81,8 @@ export default function Signup() {
           </p>
 
           <div className="space-y-1">
-            <label className="text-sm text-[#8691A4] font-medium">
-              Name
-            </label>
+            <label className="text-sm text-[#8691A4] font-medium">Name</label>
             <input
-              id="name"
               placeholder="Name"
               className="w-full h-12 px-3 rounded-md bg-[#D7E2FF] outline-none"
               {...register("name")}
@@ -107,11 +93,8 @@ export default function Signup() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm text-[#8691A4] font-medium">
-              Email
-            </label>
+            <label className="text-sm text-[#8691A4] font-medium">Email</label>
             <input
-              id="email"
               placeholder="Email"
               className="w-full h-12 px-3 rounded-md bg-[#D7E2FF] outline-none"
               {...register("email")}
@@ -126,7 +109,6 @@ export default function Signup() {
               Job Title
             </label>
             <input
-              id="jobTitle"
               placeholder="e.g. task manager"
               className="w-full h-12 px-3 rounded-md bg-[#D7E2FF] outline-none"
               {...register("jobTitle")}
@@ -139,7 +121,6 @@ export default function Signup() {
                 Password
               </label>
               <input
-                id="password"
                 type="password"
                 placeholder="Password"
                 className="w-full h-12 px-3 rounded-md bg-[#D7E2FF] outline-none"
@@ -152,7 +133,6 @@ export default function Signup() {
                 Confirm Password
               </label>
               <input
-                id="confirmedPassword"
                 type="password"
                 placeholder="Confirm Password"
                 className="w-full h-12 px-3 rounded-md bg-[#D7E2FF] outline-none"
@@ -212,12 +192,11 @@ export default function Signup() {
             </div>
           </div>
 
-          {/* BUTTON */}
           <button
-            disabled={isSubmitting}
+            disabled={mutation.isPending}
             className="w-full bg-[#014DC0] text-white h-12 rounded-md hover:opacity-90 transition"
           >
-            {isSubmitting ? "Creating Account..." : "Create Account"}
+            {mutation.isPending ? "Creating Account..." : "Create Account"}
           </button>
 
           <p className="text-center text-sm pt-6">
