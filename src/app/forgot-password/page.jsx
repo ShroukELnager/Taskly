@@ -33,9 +33,9 @@ export default function ForgotPassword() {
       reset();
     },
 
-    onError: () => {
-      setError("Network error. Please try again.");
-    },
+    onError: (err) => {
+    setErrorMsg(err.message || "Something went wrong");
+  }
   });
 
   const onSubmit = (data) => {

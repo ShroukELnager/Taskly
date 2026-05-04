@@ -51,9 +51,9 @@ export default function Signup() {
       router.push("/projects");
     },
 
-    onError: (error) => {
-      console.log("error:", error);
-    },
+    onError: (err) => {
+    setErrorMsg(err.message || "Something went wrong");
+  },
   });
 
   const onSubmit = (data) => {
