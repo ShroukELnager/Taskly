@@ -1,54 +1,29 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+
 import MembersSkeleton from "@/app/components/skeleton/member";
 import EpicsError from "@/app/components/errorsPages/epics";
 import Image from "next/image";
 
+import { getProjectMembers } from "@/app/services/members.service";
+
 export default function MembersPage() {
   const { projectId } = useParams();
 
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const fetchMembers = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("access_token="))
-        ?.split("=")[1];
-
-      const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/get_project_members?project_id=eq.${projectId}`,
-        {
-          method: "GET",
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!res.ok) throw new Error();
-
-      const data = await res.json();  
-      setMembers(data);
-    } catch (err) {
-      setError("Failed to load project members. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (projectId) fetchMembers();
-  }, [projectId]);
+const {
+  data: members = [],
+  isLoading,
+  isError,
+  refetch,
+} = useQuery({
+  queryKey: ["project-members", projectId],
+  queryFn: () => getProjectMembers(projectId),
+  enabled: !!projectId,
+  select: (res) => res?.data ?? [],
+});
 
   const getInitials = (name = "") =>
     name
@@ -58,9 +33,10 @@ export default function MembersPage() {
       .toUpperCase()
       .slice(0, 2);
 
-  if (loading) return <MembersSkeleton />;
+  if (isLoading) return <MembersSkeleton />;
 
-  if (error) return <EpicsError fetchEpics={fetchMembers} />;
+  if (isError)
+    return <EpicsError fetchEpics={refetch} />;
 
   if (members.length === 0)
     return (
@@ -72,10 +48,11 @@ export default function MembersPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto overflow-x-hidden">
 
-  
-<h1 className="text-2xl font-semibold text-center lg:text-left mb-6">
-  Project Members
-</h1>
+      <h1 className="text-2xl font-semibold text-center lg:text-left mb-6">
+        Project Members
+      </h1>
+
+      {/* Invite Button */}
       <div className="hidden sm:flex justify-end mb-6">
         <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition flex items-center gap-2">
           <Image
@@ -143,6 +120,7 @@ export default function MembersPage() {
         })}
       </div>
 
+      {/* Mobile FAB */}
       <button
         className="
           sm:hidden

@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import Cookies from "js-cookie";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { getEpics } from "@/app/services/epics.service";
+import { getProjectMembers } from "@/app/services/members.service";
+import { createTask } from "@/app/services/tasks.service";
+
 export default function CreateTaskPage() {
   const { projectId } = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const statusFromUrl = searchParams.get("status");
+  const epicIdFromUrl = searchParams.get("epicId");
+
   const {
     register,
     handleSubmit,
@@ -24,82 +31,50 @@ export default function CreateTaskPage() {
       description: "",
     },
   });
+
   useEffect(() => {
     if (statusFromUrl) {
       setValue("status", statusFromUrl);
     }
-  }, [statusFromUrl, setValue]);
-
-  // const Api_key = process.env.Api_key;
-  const [epics, setEpics] = useState([]);
-  const [members, setMembers] = useState([]);
-
-  useEffect(() => {
-    const fetchEpics = async () => {
-      const token = Cookies.get("access_token");
-
-      const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_epics?project_id=eq.${projectId}`,
-        {
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      const data = await res.json();
-      setEpics(data || []);
-    };
-
-    fetchEpics();
-  }, [projectId]);
-
-  useEffect(() => {
-    const fetchMembers = async () => {
-      const token = Cookies.get("access_token");
-
-      const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/get_project_members?project_id=eq.${projectId}`,
-        {
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      const data = await res.json();
-      setMembers(data || []);
-    };
-
-    fetchMembers();
-  }, [projectId]);
-
-  const onSubmit = async (data) => {
-    const token = Cookies.get("access_token");
-
-    const res = await fetch(
-      `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/tasks`,
-      {
-        method: "POST",
-        headers: {
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          project_id: projectId,
-          ...data,
-          status: data.status,
-        }),
-      },
-    );
-
-    if (res.ok) {
-      router.push(`/projects`);
+    if (epicIdFromUrl) {
+      setValue("epic_id", epicIdFromUrl);
     }
+  }, [epicIdFromUrl, statusFromUrl, setValue]);
+
+  const { data: epics = [], isLoading: loadingEpics } = useQuery({
+    queryKey: ["epics-options", projectId],
+    queryFn: () => getEpics({ projectId, page: 1, limit: 100 }),
+    enabled: !!projectId,
+    select: (res) => res?.data || [],
+  });
+
+  const { data: members = [], isLoading: loadingMembers } = useQuery({
+    queryKey: ["project-members", projectId],
+    queryFn: () => getProjectMembers(projectId),
+    enabled: !!projectId,
+    select: (res) => res?.data || [],
+  });
+
+  const createTaskMutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      router.push(`/projects/${projectId}/tasks`);
+    },
+  });
+
+  const onSubmit = (data) => {
+    createTaskMutation.mutate({
+      project_id: projectId,
+      ...data,
+      assignee_id: data.assignee_id || null,
+      epic_id: data.epic_id || null,
+      due_date: data.due_date || null,
+    });
   };
+
+  const submitError = createTaskMutation.error?.message;
+  const isPending = isSubmitting || createTaskMutation.isPending;
 
   return (
     <div className="min-h-screen flex justify-center p-3 sm:p-6 bg-[#F9F9FF]">
@@ -108,6 +83,12 @@ export default function CreateTaskPage() {
         <p className="text-sm text-gray-500 mb-6">
           Initialize a new work item within the project ecosystem.
         </p>
+
+        {submitError && (
+          <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+            {submitError}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
@@ -144,8 +125,11 @@ export default function CreateTaskPage() {
               <select
                 {...register("assignee_id")}
                 className="w-full mt-1 p-3 bg-[#EEF4FF] rounded-md focus:ring-2 focus:ring-blue-500"
+                defaultValue=""
               >
-                <option value="">Select Team Member</option>
+                <option value="">
+                  {loadingMembers ? "Loading members..." : "Select Team Member"}
+                </option>
                 {members.map((m) => (
                   <option key={m.user_id} value={m.user_id}>
                     {m.metadata?.name || m.email}
@@ -160,8 +144,11 @@ export default function CreateTaskPage() {
             <select
               {...register("epic_id")}
               className="w-full mt-1 p-3 bg-[#EEF4FF] rounded-md focus:ring-2 focus:ring-blue-500"
+              defaultValue=""
             >
-              <option value="">Select Epic Link</option>
+              <option value="">
+                {loadingEpics ? "Loading epics..." : "Select Epic Link"}
+              </option>
               {epics.map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.epic_id} {e.title?.slice(0, 100)}
@@ -191,17 +178,18 @@ export default function CreateTaskPage() {
 
           <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
             <button
-              onClick={() => router.push(`/projects/${projectId}/ta`)}
+              type="button"
+              onClick={() => router.push(`/projects/${projectId}/tasks`)}
               className="bg-white text-blue-700 px-6 py-3 rounded-md w-full sm:w-auto"
             >
               Back
             </button>
 
             <button
-              disabled={isSubmitting}
-              className="bg-blue-700 text-white px-6 py-3 rounded-md w-full sm:w-auto"
+              disabled={isPending}
+              className="bg-blue-700 text-white px-6 py-3 rounded-md w-full sm:w-auto disabled:opacity-60"
             >
-              Create Task
+              {isPending ? "Creating..." : "Create Task"}
             </button>
           </div>
         </form>

@@ -1,30 +1,34 @@
 import { getTokens } from "@/app/lib/auth/getTokens";
 
-export async function PUT(req) {
+async function handleResetPassword(req) {
+  const baseUrl = "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1";
+
   try {
-    const body = await req.json();
+    const apiKey = process.env.API_KEY?.trim();
 
-    const { access_token } = await getTokens();
-
-    if (!access_token) {
-      return Response.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    if (!apiKey) {
+      return Response.json({ error: "Missing API key" }, { status: 500 });
     }
 
-    const res = await fetch(
-      `${process.env.BASE_URL}/auth/v1/user`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.API_KEY,
-          Authorization: `Bearer ${access_token}`,
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const body = await req.json();
+    const { accessToken, ...payload } = body;
+
+    const { access_token: cookieAccessToken } = await getTokens();
+    const token = accessToken || cookieAccessToken;
+
+    if (!token) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const res = await fetch(`${baseUrl}/user`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: apiKey,
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
     const data = await res.json();
 
@@ -36,9 +40,14 @@ export async function PUT(req) {
       message: "Password updated successfully",
     });
   } catch (err) {
-    return Response.json(
-      { error: "Something went wrong" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Something went wrong" }, { status: 500 });
   }
+}
+
+export async function POST(req) {
+  return handleResetPassword(req);
+}
+
+export async function PUT(req) {
+  return handleResetPassword(req);
 }

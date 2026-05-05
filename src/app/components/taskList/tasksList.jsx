@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
-import Cookies from "js-cookie";
+import { useQuery } from "@tanstack/react-query";
+
 import TaskDetailsModal from "@/app/(dashboard)/projects/[projectId]/tasks/modal";
 import Pagination from "../paginations";
 import { useDebounce } from "@/app/hooks/useDebounce";
+
+import { getProjectTasks } from "@/app/services/tasks.service";
 
 export default function TaskList({ search }) {
   const { projectId } = useParams();
@@ -15,93 +17,58 @@ export default function TaskList({ search }) {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const token = Cookies.get("access_token");
-
   const [mobilePage, setMobilePage] = useState(1);
   const [desktopPage, setDesktopPage] = useState(1);
 
   const limit = 5;
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
+  const isMobile =
+    typeof window !== "undefined" && window.innerWidth < 1024;
 
   const page = isMobile ? mobilePage : desktopPage;
 
-  const [totalCount, setTotalCount] = useState(0);
-
-  const isFetchingRef = useRef(false);
-
   const debouncedSearch = useDebounce(search, 500);
 
+ 
+  const { data, isLoading } = useQuery({
+    queryKey: ["tasks", projectId, debouncedSearch],
+    queryFn: () =>
+      getProjectTasks({
+        projectId,
+        search: debouncedSearch,
+      }),
+    enabled: !!projectId,
+  });
+
+  const allTasks = data?.data || [];
+
+  // =========================
+  // Client-side pagination
+  // =========================
+  const tasks = useMemo(() => {
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    return allTasks.slice(start, end);
+  }, [allTasks, page]);
+
+  const totalCount = allTasks.length;
+
+  // =========================
+  // handlers
+  // =========================
   const openTask = (taskId) => {
     if (!taskId) return;
     setSelectedTaskId(taskId);
     setIsOpen(true);
   };
 
-  // reset عند search
-  useEffect(() => {
-    setTasks([]);
-    setMobilePage(1);
-    setDesktopPage(1);
-  }, [debouncedSearch, projectId]);
-
-  const fetchTasks = async () => {
-    if (isFetchingRef.current) return;
-
-    isFetchingRef.current = true;
-
-    try {
-      setLoading(true);
-
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
-
-      let url = `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_tasks?project_id=eq.${projectId}&order=created_at.desc`;
-
-      if (debouncedSearch) {
-        url += `&title=ilike.%25${debouncedSearch}%25`;
-      }
-
-      const res = await fetch(url, {
-        headers: {
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Prefer: "count=exact",
-          Range: `${from}-${to}`,
-        },
-      });
-
-      const data = await res.json();
-      const safeData = Array.isArray(data) ? data : [];
-
-      const contentRange = res.headers.get("content-range");
-      const count = Number(contentRange?.split("/")?.[1] || 0);
-
-      setTotalCount(count);
-
-      setTasks(safeData);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-      isFetchingRef.current = false;
-    }
-  };
-
-  useEffect(() => {
-    fetchTasks();
-  }, [projectId, page, debouncedSearch]);
-
   const goToCreateTask = () => {
-    router.push(`/project/${projectId}/tasks/new`);
+    router.push(`/project/${projectId}/tasks/create`);
   };
 
   return (
     <div className="p-6 bg-[#F9F9FF] min-h-screen">
+      {/* ADD BUTTON */}
       <div className="flex flex-col sm:flex-row sm:items-center mb-6 gap-3 lg:justify-end">
         <button
           onClick={goToCreateTask}
@@ -113,7 +80,7 @@ export default function TaskList({ search }) {
 
       {/* MOBILE */}
       <div className="lg:hidden space-y-4">
-        {loading ? (
+        {isLoading ? (
           <p className="text-sm text-gray-500">Loading...</p>
         ) : (
           tasks.map((task) => (
@@ -151,7 +118,7 @@ export default function TaskList({ search }) {
           <div className="text-right">Settings</div>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <p className="p-4 text-sm text-gray-500">Loading...</p>
         ) : (
           tasks.map((task) => (
@@ -188,18 +155,18 @@ export default function TaskList({ search }) {
         )}
       </div>
 
-      {/* 🔥 Pagination بقى شغال للموبايل والديسكتوب */}
+      {/* PAGINATION */}
       <Pagination
         currentPage={page}
         totalCount={totalCount}
         limit={limit}
         onPageChange={(p) => {
-          setTasks([]);
           isMobile ? setMobilePage(p) : setDesktopPage(p);
         }}
         label="tasks"
       />
 
+      {/* MODAL */}
       <TaskDetailsModal
         taskId={selectedTaskId}
         projectId={projectId}

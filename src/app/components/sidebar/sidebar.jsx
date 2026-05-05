@@ -114,12 +114,17 @@ export default function Sidebar() {
 
         <nav className="flex-1 px-2 py-6">
           <ul className="flex flex-col gap-4 px-5">
-            <li className="flex items-center gap-3 py-2 rounded-md hover:bg-gray-100 px-2 cursor-pointer transition">
+            <li
+              className={`flex items-center py-2 rounded-md hover:bg-gray-100 cursor-pointer transition ${
+                open ? "gap-3 px-2" : "justify-center px-0"
+              }`}
+            >
               <Image
                 src="/images/proj.png"
                 width={20}
                 height={18}
                 alt="Projects"
+                className="w-5 h-5 shrink-0"
               />
 
               {open && (
@@ -136,12 +141,13 @@ export default function Sidebar() {
                 return (
                   <li
                     key={link.name}
-                    className={`flex items-center gap-4 py-3 px-2 rounded-md transition
+                    className={`flex items-center py-3 rounded-md transition
                     ${
                       !isProjectSelected
                         ? "opacity-40 cursor-not-allowed"
-                        : "hover:bg-gray-100 px-2 cursor-pointer"
+                        : "hover:bg-gray-100 cursor-pointer"
                     }
+                    ${open ? "gap-4 px-2" : "justify-center px-0"}
                     ${active ? "bg-white" : ""}
                   `}
                   >
@@ -150,6 +156,7 @@ export default function Sidebar() {
                       width={20}
                       height={18}
                       alt={link.name}
+                      className="w-5 h-5 shrink-0"
                     />
 
                     {open &&
@@ -175,26 +182,32 @@ export default function Sidebar() {
         <div className="mt-auto px-2 py-5 flex flex-col gap-3">
           <button
             onClick={() => setOpen(!open)}
-            className="hidden md:flex items-center gap-4 px-5 py-3 rounded-md hover:bg-gray-100 transition"
+            className={`hidden md:flex items-center py-3 rounded-md hover:bg-gray-100 transition ${
+              open ? "gap-4 px-5" : "justify-center px-0"
+            }`}
           >
             <Image
               src={open ? "/images/arrowleft.svg" : "/images/arrowright.svg"}
               width={10}
               height={10}
               alt="toggle"
+              className="shrink-0"
             />
             {open && <span>Collapse</span>}
           </button>
 
           <div
             onClick={handleLogout}
-            className="flex items-center gap-4 px-5 py-3 rounded-md hover:bg-gray-100 cursor-pointer transition"
+            className={`flex items-center py-3 rounded-md hover:bg-gray-100 cursor-pointer transition ${
+              open ? "gap-4 px-5" : "justify-center px-0"
+            }`}
           >
             <Image
               src="/images/logout.svg"
               width={20}
               height={18}
               alt="logout"
+              className="w-5 h-5 shrink-0"
             />
             {open && <span>Logout</span>}
           </div>

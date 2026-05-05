@@ -1,44 +1,37 @@
-import Cookies from "js-cookie";
+"use client";
 
-export const fetchTasksByStatus = async (
-  projectId,
-  status,
-  searchValue = ""
-) => {
-  try {
-    const token = Cookies.get("access_token");
+import { useQuery } from "@tanstack/react-query";
+import { getProjectTasks } from "@/app/services/tasks.service";
 
-    if (!token) {
-      throw new Error("No access token found");
-    }
+export default function useTasks(projectId, status, search) {
+  return useQuery({
+    queryKey: ["tasks", projectId],
 
-    const limit = 100; // optional
-    let url = `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_tasks?project_id=eq.${projectId}&status=eq.${status}&limit=${limit}`;
+    queryFn: ({ signal }) =>
+      getProjectTasks({
+        projectId,
+        signal,
+      }),
 
-    // ✅ SAME LOGIC AS EPICS
-    if (searchValue) {
-      url += `&title=ilike.%25${searchValue}%25`;
-    }
+    enabled: !!projectId,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    retry: false,
 
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    select: (res) => {
+      const normalizedSearch = search?.trim().toLowerCase();
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Failed to fetch: ${errorText}`);
-    }
+      return (res?.data || []).filter((task) => {
+        const matchesStatus = !status || task.status === status;
+        const matchesSearch =
+          !normalizedSearch ||
+          task.title?.toLowerCase().includes(normalizedSearch);
 
-    const data = await res.json();
-    return data ;
-    console.log("fetchTasksByStatus data:", data);
-  } catch (error) {
-    console.error("fetchTasksByStatus error:", error);
-    return [];
-  }
-};
+        return matchesStatus && matchesSearch;
+      });
+    },
+  });
+}

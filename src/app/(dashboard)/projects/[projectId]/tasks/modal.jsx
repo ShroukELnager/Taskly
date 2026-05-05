@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTaskDetails } from "@/app/api2/getTaskDetails";
 import TaskDetailsSkeleton from "@/app/components/skeleton/taskDetailsSkeleton";
 import Image from "next/image";
+import { getTaskDetails } from "@/app/services/tasks.service";
 
 export default function TaskDetailsModal({
   isOpen,
@@ -23,7 +23,7 @@ export default function TaskDetailsModal({
         setLoading(true);
         setError(false);
 
-        const data = await getTaskDetails(projectId, taskId);
+        const data = await getTaskDetails({ projectId, taskId });
         setTask(data);
       } catch (err) {
         setError(true);

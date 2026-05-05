@@ -5,7 +5,15 @@ export async function signup(data) {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      result?.error_description || result?.error || "Signup failed"
+    );
+  }
+
+  return result;
 }
 
 export async function login(data) {
@@ -15,7 +23,15 @@ export async function login(data) {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      result?.error_description || result?.error || "Login failed"
+    );
+  }
+
+  return result;
 }
 
 export async function logout() {
@@ -23,7 +39,13 @@ export async function logout() {
     method: "POST",
   });
 
-  return res.json();
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(result?.error || "Logout failed");
+  }
+
+  return result;
 }
 
 export async function forgotPassword(data) {
@@ -33,7 +55,15 @@ export async function forgotPassword(data) {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      result?.error_description || result?.error || "Forgot password failed"
+    );
+  }
+
+  return result;
 }
 
 export async function resetPassword(data) {
@@ -43,5 +73,13 @@ export async function resetPassword(data) {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  const result = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      result?.error_description || result?.error || "Reset password failed"
+    );
+  }
+
+  return result;
 }

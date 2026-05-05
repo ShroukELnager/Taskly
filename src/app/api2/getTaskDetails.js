@@ -1,23 +1,20 @@
-import Cookies from "js-cookie";
+"use client";
 
-export async function getTaskDetails(projectId, taskId) {
- 
+import { useQuery } from "@tanstack/react-query";
+import { getTaskDetails } from "@/app/services/tasks.service";
 
-  const token = Cookies.get("access_token");
+export function useTaskDetails({ projectId, taskId }) {
+  return useQuery({
+    queryKey: ["task", projectId, taskId],
 
-  const res = await fetch(
-    `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/project_tasks?project_id=eq.${projectId}&id=eq.${taskId}`,
-    {
-      method: "GET",
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+    queryFn: () =>
+      getTaskDetails({
+        projectId,
+        taskId,
+      }),
 
-  if (!res.ok) throw new Error("Failed to fetch task");
+    enabled: !!projectId && !!taskId,
 
-  const data = await res.json();
-  return data?.[0] || null;
+    staleTime: 1000 * 60 * 5, 
+  });
 }

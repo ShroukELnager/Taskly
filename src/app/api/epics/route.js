@@ -1,75 +1,121 @@
 import { getTokens } from "@/app/lib/auth/getTokens";
 
-const BASE_URL = process.env.BASE_URL;
-const API_KEY = process.env.API_KEY;
+const apiKey = process.env.API_KEY?.trim();
+const baseUrl = "https://pcufxstnppfqmzgslxlk.supabase.co";
 
 export async function GET(req) {
-  const { access_token } = await getTokens();
+  try {
+    const { access_token } = await getTokens();
 
-  if (!access_token) {
-    return Response.json({ error: "No token found" }, { status: 401 });
-  }
+    if (!access_token) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(req.url);
 
-  const project_id = searchParams.get("project_id");
+    const project_id = searchParams.get("project_id");
+    const id = searchParams.get("id");
+    const limit = Number(searchParams.get("limit") || 6);
+    const offset = Number(searchParams.get("offset") || 0);
+    const search = searchParams.get("search") || "";
 
-  const search = searchParams.get("search") || "";
-  const status = searchParams.get("status");
+    if (!project_id) {
+      return Response.json(
+        { error: "project_id is required" },
+        { status: 400 }
+      );
+    }
 
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "10");
-  const offset = (page - 1) * limit;
+    let url = `${baseUrl}/rest/v1/project_epics?project_id=eq.${project_id}`;
 
-  if (!project_id) {
+    if (id) {
+      url += `&id=eq.${id}`;
+    }
+
+    if (search.trim()) {
+      url += `&title=ilike.*${search.trim()}*`;
+    }
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        apikey: apiKey,
+        Authorization: `Bearer ${access_token}`,
+
+        // 👇 أهم سطر
+        Range: id ? "0-0" : `${offset}-${offset + limit - 1}`,
+        Prefer: "count=exact",
+      },
+    });
+
+    const data = await res.json();
+
+    const contentRange = res.headers.get("content-range");
+
+    const totalCount = contentRange
+      ? Number(contentRange.split("/")[1])
+      : 0;
+
+    return Response.json({
+      data,
+      totalCount,
+    });
+  } catch (err) {
     return Response.json(
-      { error: "project_id is required" },
-      { status: 400 }
+      { error: err.message || "Something went wrong" },
+      { status: 500 }
     );
   }
-
-  let url = `${BASE_URL}/rest/v1/project_epics?project_id=eq.${project_id}&limit=${limit}&offset=${offset}`;
-
-  if (search) {
-    url += `&title=ilike.%25${search}%25`;
-  }
-
-  if (status) {
-    url += `&status=eq.${status}`;
-  }
-
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      apikey: API_KEY,
-      Authorization: `Bearer ${access_token}`,
-    },
-  });
-
-  const data = await res.json();
-
-  return Response.json(data);
 }
 
+// =========================
+// POST EPIC
+// =========================
 export async function POST(req) {
-  const { access_token } = await getTokens();
+  try {
+    const { access_token } = await getTokens();
 
-  if (!access_token) {
-    return Response.json({ error: "No token found" }, { status: 401 });
+    if (!access_token) {
+      return Response.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+
+    if (!body || Object.keys(body).length === 0) {
+      return Response.json(
+        { error: "Request body is required" },
+        { status: 400 }
+      );
+    }
+
+    const res = await fetch(`${baseUrl}/rest/v1/epics`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: apiKey,
+        Authorization: `Bearer ${access_token}`,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return Response.json(
+        { error: data?.message || "Failed to create epic" },
+        { status: res.status }
+      );
+    }
+
+    return Response.json(data);
+  } catch (err) {
+    return Response.json(
+      { error: err.message || "Something went wrong" },
+      { status: 500 }
+    );
   }
-
-  const body = await req.json();
-
-  const res = await fetch(`${BASE_URL}/rest/v1/epics`, {
-    method: "POST",
-    headers: {
-      apikey: API_KEY,
-      Authorization: `Bearer ${access_token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-  return Response.json(data);
 }

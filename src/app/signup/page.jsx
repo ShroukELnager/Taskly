@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,6 +16,7 @@ import { signup } from "../services/auth.service";
 export default function Signup() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const [apiError, setApiError] = useState("");
 
   const {
     register,
@@ -36,10 +37,8 @@ export default function Signup() {
     mutationFn: signup,
 
     onSuccess: (result) => {
-      console.log("result:", result);
-
       if (!result?.user) {
-        console.log("Error:", result?.error_description);
+        setApiError("Signup failed. Please try again.");
         return;
       }
 
@@ -52,11 +51,12 @@ export default function Signup() {
     },
 
     onError: (err) => {
-    setErrorMsg(err.message || "Something went wrong");
-  },
+      setApiError(err.message || "Something went wrong");
+    },
   });
 
   const onSubmit = (data) => {
+    setApiError("");
     mutation.mutate(data);
   };
 
@@ -79,6 +79,10 @@ export default function Signup() {
           <p className="text-gray-400 text-sm text-center">
             Join the editorial approach to task management
           </p>
+
+          {apiError && (
+            <p className="text-red-500 text-sm text-center">{apiError}</p>
+          )}
 
           <div className="space-y-1">
             <label className="text-sm text-[#8691A4] font-medium">Name</label>

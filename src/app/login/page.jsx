@@ -37,12 +37,15 @@ export default function Login() {
     onSuccess: async (result) => {
       const { access_token, refresh_token, user, expires_at } = result;
 
-      console.log("TOKEN:", access_token);
+      if (!access_token || !refresh_token || !expires_at) {
+        setApiError("Login response is missing required auth tokens.");
+        return;
+      }
 
       const expiresDate = new Date(expires_at * 1000);
 
       const cookieOptions = {
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         ...(rememberMe && { expires: expiresDate }),
       };
@@ -55,12 +58,13 @@ export default function Login() {
 
       dispatch(setAccessToken(validToken || access_token));
       dispatch(setUser(user));
+console.log(user);
 
       router.push("/projects");
     },
 
     onError: (err) => {
-      setApiError(err?.error_description || "Invalid email or password");
+      setApiError(err.message || "Something went wrong");
     },
   });
 

@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
@@ -10,6 +9,12 @@ import * as z from "zod";
 
 import toast from "react-hot-toast";
 import { required } from "zod/v4-mini";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+// SERVICES
+import { getProjectMembers } from "@/app/services/members.service";
+import { createEpic } from "@/app/services/epics.service";
 
 const schema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -21,9 +26,7 @@ const schema = z.object({
 export default function CreateEpic() {
   const router = useRouter();
   const { projectId } = useParams();
-
-  const [members, setMembers] = useState([]);
-  const [loadingMembers, setLoadingMembers] = useState(true);
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -34,76 +37,43 @@ export default function CreateEpic() {
     mode: "onSubmit",
   });
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("access_token="))
-          ?.split("=")[1];
+  // =========================
+  // GET MEMBERS (React Query instead of useEffect)
+  // =========================
+  const { data: members = [], isLoading: loadingMembers } = useQuery({
+    queryKey: ["project-members", projectId],
+    queryFn: () => getProjectMembers(projectId),
+    enabled: !!projectId,
+    select: (res) => res?.data || res || [],
+  });
 
-        const res = await fetch(
-          `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/get_project_members?project_id=eq.${projectId}`,
-          {
-            method: "GET",
-            headers: {
-              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const data = await res.json();
-        setMembers(data || []);
-      } catch (err) {
-        console.log(err);
-        toast.error("Failed to load members");
-      } finally {
-        setLoadingMembers(false);
-      }
-    };
-
-    fetchMembers();
-  }, [projectId]);
-
-  const onSubmit = async (data) => {
-    try {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("access_token="))
-        ?.split("=")[1];
-
-      const requestBody = {
-        title: data.title,
-        description: data.description || "",
-        assignee_id: data.user_id,
-        project_id: projectId,
-        deadline: data.deadline || null,
-      };
-
-      const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/epics`,
-        {
-          method: "POST",
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        },
-      );
-
-      if (!res.ok) throw new Error("Failed to create epic");
-
+  // =========================
+  // CREATE EPIC (React Query Mutation)
+  // =========================
+  const createEpicMutation = useMutation({
+    mutationFn: createEpic,
+    onSuccess: () => {
       toast.success("Epic created successfully");
 
+      queryClient.invalidateQueries(["epics"]);
+
       router.push(`/projects/${projectId}/epics`);
-    } catch (err) {
-      console.log(err);
+    },
+    onError: (err) => {
       toast.error(err.message);
-    }
+    },
+  });
+
+  const onSubmit = (data) => {
+    const requestBody = {
+      title: data.title,
+      description: data.description || "",
+      assignee_id: data.user_id,
+      project_id: projectId,
+      deadline: data.deadline || null,
+    };
+
+    createEpicMutation.mutate(requestBody);
   };
 
   return (
@@ -131,7 +101,9 @@ export default function CreateEpic() {
             </div>
 
             <div>
-              <label className="text-xs text-gray-500">Description</label>
+              <label className="text-xs text-gray-500">
+                Description
+              </label>
 
               <textarea
                 {...register("description")}
@@ -141,7 +113,9 @@ export default function CreateEpic() {
             </div>
 
             <div>
-              <label className="text-xs text-gray-500">Assignee</label>
+              <label className="text-xs text-gray-500">
+                Assignee
+              </label>
 
               <select
                 {...register("user_id", required)}
@@ -174,17 +148,21 @@ export default function CreateEpic() {
             <div className="flex justify-between mt-3">
               <button
                 type="button"
-                onClick={() => router.push(`/projects/${projectId}/epics`)}
+                onClick={() =>
+                  router.push(`/projects/${projectId}/epics`)
+                }
                 className="text-gray-500"
               >
                 Cancel
               </button>
 
               <button
-                disabled={isSubmitting}
+                disabled={isSubmitting || createEpicMutation.isPending}
                 className="bg-[#014CBF] text-white px-5 py-2 rounded-md hover:bg-blue-600"
               >
-                {isSubmitting ? "Creating..." : "Create"}
+                {isSubmitting || createEpicMutation.isPending
+                  ? "Creating..."
+                  : "Create"}
               </button>
             </div>
           </form>

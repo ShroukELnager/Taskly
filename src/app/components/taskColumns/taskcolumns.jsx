@@ -1,18 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { fetchTasksByStatus } from "@/app/api2/fetchTasks";
 import Image from "next/image";
 import TaskDetailsModal from "@/app/(dashboard)/projects/[projectId]/tasks/modal";
 import { useDroppable } from "@dnd-kit/core";
 import TaskCard from "../taskCart";
 import { useDebounce } from "@/app/hooks/useDebounce";
+import useTasks from "@/app/api2/fetchTasks";
 
 export default function TaskColumn({ status, projectId, search }) {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -20,6 +17,13 @@ export default function TaskColumn({ status, projectId, search }) {
 
   // ✅ debounce search
   const debouncedSearch = useDebounce(search, 400);
+
+  // ✅ هنا الصح: استخدام hook مباشرة
+  const {
+    data: tasks = [],
+    isLoading: loading,
+    isError,
+  } = useTasks(projectId, status, debouncedSearch);
 
   const STATUS_STYLES = {
     TO_DO: "bg-gray-400 text-gray-600",
@@ -37,42 +41,11 @@ export default function TaskColumn({ status, projectId, search }) {
   });
 
   // =========================
-  // FETCH TASKS (WITH DEBOUNCE)
-  // =========================
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadTasks() {
-      try {
-        setLoading(true);
-
-        const data = await fetchTasksByStatus(
-          projectId,
-          status,
-          debouncedSearch, // ✅ مهم جدًا
-        );
-
-        if (!ignore) setTasks(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    }
-
-    loadTasks();
-
-    return () => {
-      ignore = true;
-    };
-  }, [projectId, status, debouncedSearch]);
-
-  // =========================
   // CREATE TASK
   // =========================
   const goToCreate = () => {
     router.push(
-      `/projects/${projectId}/tasks/create?status=${encodeURIComponent(status)}`,
+      `/projects/${projectId}/tasks/create?status=${encodeURIComponent(status)}`
     );
   };
 
@@ -82,7 +55,7 @@ export default function TaskColumn({ status, projectId, search }) {
   };
 
   return (
-    <div ref={setNodeRef} className="min-w-[270px] flex flex-col">
+    <div ref={setNodeRef} className="w-[270px] shrink-0 flex flex-col">
       {/* HEADER */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-xs font-semibold text-gray-600">
@@ -122,10 +95,16 @@ export default function TaskColumn({ status, projectId, search }) {
       {/* TASKS */}
       {loading ? (
         <div className="text-xs text-gray-400">Loading...</div>
+      ) : isError ? (
+        <div className="text-xs text-red-500">Error loading tasks</div>
       ) : (
         <div className="flex flex-col gap-3">
           {tasks.map((task) => (
-            <TaskCard key={task.task_id} task={task} openTask={openTask} />
+            <TaskCard
+              key={task.id ?? task.task_id}
+              task={task}
+              openTask={openTask}
+            />
           ))}
         </div>
       )}

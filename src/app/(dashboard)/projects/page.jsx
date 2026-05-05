@@ -2,112 +2,70 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState, useRef } from "react";
+import React from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+
 import SkeletonCard from "@/app/components/skeleton/projects";
 import EpicsError from "@/app/components/errorsPages/epics";
 import EmptyProjects from "@/app/components/emptyPages/project";
 import Pagination from "@/app/components/paginations";
 
 export default function Projects() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [error, setError] = useState("");
-
-  const isFetching = useRef(false);
-
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const limit = 5;
-  const router = useRouter();
 
-  const fetchProjects = async (page = 1, append = false) => {
-    if (isFetching.current) return;
+  // ✅ fetch function
+  const fetchProjects = async ({ pageParam = 1 }) => {
+    const offset = (pageParam - 1) * limit;
 
-    isFetching.current = true;
+    const res = await fetch(
+      `/api/projects?limit=${limit}&offset=${offset}`
+    );
 
-    if (append) setLoadingMore(true);
-    else setLoading(true);
-
-    setError("");
-
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("access_token="))
-      ?.split("=")[1];
-
-    try {
-      const offset = (page - 1) * limit;
-
-      const res = await fetch(
-        `https://pcufxstnppfqmzgslxlk.supabase.co/rest/v1/rpc/get_projects?limit=${limit}&offset=${offset}`,
-        {
-          method: "GET",
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Prefer: "count=exact",
-          },
-        },
-      );
-
-      if (!res.ok) throw new Error("Failed to fetch projects");
-
-      const data = await res.json();
-
-      const contentRange = res.headers.get("Content-Range");
-      const total = contentRange?.split("/")[1];
-
-      setTotalCount(Number(total));
-
-      if (append) {
-        setProjects((prev) => [...prev, ...data]);
-      } else {
-        setProjects(data);
-      }
-
-      const nextOffset = page * limit;
-      setHasMore(nextOffset < Number(total));
-    } catch (err) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      isFetching.current = false;
+    if (!res.ok) {
+      throw new Error("Failed to fetch projects");
     }
+
+    const result = await res.json();
+
+    return {
+      data: result?.data ?? [],
+      totalCount: Number(result?.totalCount ?? 0),
+      nextPage: pageParam + 1,
+    };
   };
 
-  useEffect(() => {
-    fetchProjects(currentPage);
-  }, [currentPage]);
+  const {
+    data,
+    error,
+    isLoading,
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const isMobile = window.innerWidth < 640;
-      if (!isMobile) return;
+  } = useInfiniteQuery({
+    queryKey: ["projects"],
+    queryFn: fetchProjects,
 
-      if (
-        window.innerHeight + document.documentElement.scrollTop + 100 >=
-        document.documentElement.scrollHeight
-      ) {
-        if (!loadingMore && hasMore) {
-          const nextPage = currentPage + 1;
-          setCurrentPage(nextPage);
-          fetchProjects(nextPage, true);
-        }
+    getNextPageParam: (lastPage, pages) => {
+      const loadedItems = pages.flatMap((p) => p.data).length;
+
+      if (loadedItems < lastPage.totalCount) {
+        return lastPage.nextPage;
       }
-    };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [currentPage, hasMore, loadingMore]);
+      return undefined;
+    },
+  });
+
+  const projects = data?.pages?.flatMap((p) => p.data) ?? [];
+
+  const totalCount =
+    data?.pages?.[0]?.totalCount ?? 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center pb-24 sm:pb-10">
+    <div className="min-h-full bg-gray-50 flex justify-center pb-24 sm:pb-10">
       <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+
         <div className="p-4 flex justify-between items-center flex-col sm:flex-row gap-4 sm:gap-0">
           <div className="text-center sm:text-left w-full">
             <h1 className="font-semibold text-3xl">Projects</h1>
@@ -129,11 +87,15 @@ export default function Projects() {
 
         {error && (
           <div className="p-4">
-            <EpicsError fetchEpics={fetchProjects} />
+            <EpicsError
+              fetchEpics={() =>
+                queryClient.invalidateQueries({ queryKey: ["projects"] })
+              }
+            />
           </div>
         )}
 
-        {loading && (
+        {isLoading && (
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(limit)].map((_, i) => (
               <SkeletonCard key={i} />
@@ -141,19 +103,22 @@ export default function Projects() {
           </div>
         )}
 
-        {!loading && projects.length === 0 && (
+        {!isLoading && projects.length === 0 && (
           <div className="flex flex-col items-center justify-center text-center py-20">
             <EmptyProjects />
           </div>
         )}
 
-        {!loading && !error && projects.length > 0 && (
+        {!isLoading && !error && projects.length > 0 && (
           <>
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  onClick={() => router.push(`/projects/${project.id}/epics`)}
+                  onClick={() =>
+                    router.push(`/projects/${project.id}/epics`)
+                  }
                   className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md hover:scale-105 transition cursor-pointer"
                 >
                   <h2 className="text-lg font-semibold text-gray-900">
@@ -204,17 +169,15 @@ export default function Projects() {
 
             <div className="hidden sm:block px-4 pb-20">
               <Pagination
-                currentPage={currentPage}
+                currentPage={1}
                 totalCount={totalCount}
                 limit={limit}
-                onPageChange={setCurrentPage}
+                onPageChange={() => {}}
                 label="projects"
               />
             </div>
 
-            {loadingMore && (
-              <p className="text-center text-gray-500 pb-10">Loading more...</p>
-            )}
+      
           </>
         )}
       </div>

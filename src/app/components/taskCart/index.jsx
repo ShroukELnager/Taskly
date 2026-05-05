@@ -4,8 +4,11 @@ import { useDraggable } from "@dnd-kit/core";
 import Image from "next/image";
 
 export default function TaskCard({ task, openTask }) {
+  const taskId = task.id ?? task.task_id;
+
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: task.id, // 👈 أهم تعديل
+    id: taskId,
+    data: { task },
   });
 
   return (
@@ -20,7 +23,7 @@ export default function TaskCard({ task, openTask }) {
       }}
       onClick={(e) => {
         e.stopPropagation();
-        openTask(task.id);
+        openTask(taskId);
       }}
       className="bg-white p-3 rounded-xl shadow-sm cursor-pointer"
     >

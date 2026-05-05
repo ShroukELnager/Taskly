@@ -10,7 +10,7 @@ export default function Tasks() {
 const [search, setSearch] = useState("");
   return (
     <>
-      <div className="max-w-5xl px-2">
+      <div className="w-full px-2">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
   
   <div className="text-center lg:text-left w-full">
@@ -107,8 +107,10 @@ const [search, setSearch] = useState("");
         <TaskList />
       </div>
 
-      <div className="hidden lg:block">
-        {view === "board" ? <TaskBoard search={search}/> : <TaskList search={search} />}
+      <div className="hidden lg:block w-full min-w-0">
+        {view === "board" ? <div className="w-full min-w-0 overflow-x-auto">
+  <TaskBoard search={search} />
+</div> : <TaskList search={search} />}
       </div>
     </>
   );

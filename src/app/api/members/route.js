@@ -1,41 +1,61 @@
 import { getTokens } from "@/app/lib/auth/getTokens";
 
-const BASE_URL = process.env.BASE_URL;
-const API_KEY = process.env.API_KEY;
+const apiKey = process.env.API_KEY?.trim();
+const baseUrl = "https://pcufxstnppfqmzgslxlk.supabase.co";
+
+function handleError(message, status = 500) {
+  return Response.json({ error: message }, { status });
+}
 
 export async function GET(req) {
-  const { access_token } = await getTokens();
+  try {
+    const { access_token } = await getTokens();
 
-  if (!access_token) {
-    return Response.json({ error: "No token found" }, { status: 401 });
-  }
-
-  const { searchParams } = new URL(req.url);
-  const project_id = searchParams.get("project_id");
-
-  if (!project_id) {
-    return Response.json(
-      { error: "project_id is required" },
-      { status: 400 }
-    );
-  }
-
-  const res = await fetch(
-    `${BASE_URL}/rest/v1/get_project_members?project_id=eq.${project_id}`,
-    {
-      method: "GET",
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${access_token}`,
-      },
+    // ✅ check token
+    if (!access_token) {
+      return handleError("No token found", 401);
     }
-  );
 
-  const data = await res.json();
+    // ✅ check env
+    if (!baseUrl || !apiKey) {
+      return handleError("Server configuration error", 500);
+    }
 
-  if (!res.ok) {
-    return Response.json(data, { status: res.status });
+    const { searchParams } = new URL(req.url);
+    const project_id = searchParams.get("project_id");
+
+    // ✅ validation
+    if (!project_id) {
+      return handleError("project_id is required", 400);
+    }
+
+    const res = await fetch(
+      `${baseUrl}/rest/v1/get_project_members?project_id=eq.${project_id}`,
+      {
+        method: "GET",
+        headers: {
+          apikey: apiKey,
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    // ✅ handle API errors
+    if (!res.ok) {
+      const errorData = await res.json();
+      return handleError(
+        errorData?.message || "Failed to fetch project members",
+        res.status
+      );
+    }
+
+    const data = await res.json();
+
+    return Response.json({
+      message: "Project members fetched successfully",
+      data,
+    });
+  } catch (err) {
+    return handleError(err.message || "Something went wrong");
   }
-
-  return Response.json(data);
 }

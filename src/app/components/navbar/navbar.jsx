@@ -6,6 +6,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { getValidAccessToken } from "@/app/api2/utils/auth";
 import { fetchUsers } from "@/app/features/users/usersThunk";
+
 export default function Navbar() {
   const user = useSelector((state) => state.users.user);
   const dispatch = useDispatch();
@@ -16,16 +17,23 @@ export default function Navbar() {
   const dropdownRef = useRef();
   const router = useRouter();
 
-  const name = user?.name || "No name provided";
-  const jobTitle = user?.jobTitle || "No job title provided";
+  // ✅ FIX: Supabase user shape
+  const name = user?.user_metadata?.name || "No name provided";
+
+  const jobTitle =
+    user?.user_metadata?.job_title || "No job title provided";
+
   const email = user?.email || "No email";
 
-  const initials = name
+  // ✅ safe initials
+  const initials = (name || "")
     .split(" ")
+    .filter(Boolean)
     .map((word) => word[0])
     .join("")
     .toUpperCase();
 
+  // close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!dropdownRef.current?.contains(e.target)) {
@@ -37,6 +45,7 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // auth sync
   useEffect(() => {
     const syncAuth = async () => {
       const token = await getValidAccessToken(dispatch);
@@ -63,7 +72,7 @@ export default function Navbar() {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       if (!res.ok) throw new Error("Logout failed");
@@ -84,11 +93,13 @@ export default function Navbar() {
         className="flex items-center gap-3 ml-auto relative"
         ref={dropdownRef}
       >
+        {/* user info */}
         <div className="hidden sm:block text-right">
           <p className="text-sm font-semibold">{name}</p>
           <p className="text-xs text-gray-500">{jobTitle}</p>
         </div>
 
+        {/* avatar */}
         <div
           onClick={() => setOpen(!open)}
           className="w-10 h-10 bg-blue-600 text-white flex items-center justify-center rounded-lg border cursor-pointer"
@@ -96,6 +107,7 @@ export default function Navbar() {
           {initials}
         </div>
 
+        {/* dropdown */}
         {open && (
           <div className="absolute right-0 top-14 w-72 bg-white rounded-2xl shadow-xl p-4 space-y-4 z-50 animate-fadeIn">
             <div className="flex items-center gap-3">

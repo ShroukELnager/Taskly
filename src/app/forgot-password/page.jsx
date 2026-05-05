@@ -34,8 +34,8 @@ export default function ForgotPassword() {
     },
 
     onError: (err) => {
-    setErrorMsg(err.message || "Something went wrong");
-  }
+      setError(err.message || "Something went wrong");
+    },
   });
 
   const onSubmit = (data) => {

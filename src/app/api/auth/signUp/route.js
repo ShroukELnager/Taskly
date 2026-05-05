@@ -1,20 +1,23 @@
-import { cookies } from "next/headers";
-
 export async function POST(req) {
+  const BASE_URL = "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1";
+
   try {
+    const apiKey = process.env.API_KEY?.trim();
+
+    if (!apiKey) {
+      return Response.json({ error: "Missing API key" }, { status: 500 });
+    }
+
     const body = await req.json();
 
-    const res = await fetch(
-      `${process.env.BASE_URL}/auth/v1/signup`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.API_KEY,
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const res = await fetch(`${BASE_URL}/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: apiKey,
+      },
+      body: JSON.stringify(body),
+    });
 
     const data = await res.json();
 
@@ -27,9 +30,6 @@ export async function POST(req) {
       message: "Signup successful",
     });
   } catch (err) {
-    return Response.json(
-      { error: "Something went wrong" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Something went wrong" }, { status: 500 });
   }
 }

@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "../services/auth.service";
 
-
 export default function ResetPassword() {
   const router = useRouter();
 
@@ -42,23 +41,23 @@ export default function ResetPassword() {
 
   const isValidPassword =
     hasLength && hasLower && hasUpper && hasDigit && hasSpecial;
-const mutation = useMutation({
-  mutationFn: resetPassword,
+  const mutation = useMutation({
+    mutationFn: resetPassword,
 
-  onSuccess: () => {
-    setSuccessMsg(
-      "Your password has been updated successfully. You can now log in"
-    );
+    onSuccess: () => {
+      setSuccessMsg(
+        "Your password has been updated successfully. You can now log in"
+      );
 
-    setTimeout(() => {
-      router.push("/login");
-    }, 3000);
-  },
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000);
+    },
 
-  onError: (err) => {
-    setErrorMsg(err.message || "Something went wrong");
-  },
-});
+    onError: (err) => {
+      setErrorMsg(err.message || "Something went wrong");
+    },
+  });
 
   const onSubmit = () => {
     if (!isValidPassword) {
