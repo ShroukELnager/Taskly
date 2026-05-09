@@ -16,7 +16,9 @@ export async function acceptInvitation(token) {
 
   if (!res.ok) {
     if (res.status === 401) {
-      throw new Error("You must be logged in to accept this invitation");
+      const error = new Error("Unauthorized");
+      error.status = 401;
+      throw error;
     }
 
     if (res.status === 403) {
@@ -26,7 +28,7 @@ export async function acceptInvitation(token) {
     throw new Error(
       data?.error ||
       data?.message ||
-      "Invalid or expired invitation"
+      "Invitation has expired"
     );
   }
 

@@ -7,10 +7,10 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { acceptInvitation } from "@/app/services/invitation.service";
 
-export default function AcceptInviteModal({ open, onClose }) {
+export default function AcceptInviteModal({ open, onClose, token: inviteToken }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get("token");
+  const token = inviteToken || searchParams.get("token");
 
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -33,6 +33,15 @@ export default function AcceptInviteModal({ open, onClose }) {
     },
 
     onError: (err) => {
+      if (err?.status === 401) {
+        const redirectTo = token
+          ? `/invite?token=${encodeURIComponent(token)}`
+          : "/invite";
+
+        router.replace(`/login?redirect=${encodeURIComponent(redirectTo)}`);
+        return;
+      }
+
       setErrorMsg(err.message || "Something went wrong");
       setSuccessMsg("");
     },
