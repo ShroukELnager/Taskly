@@ -60,43 +60,57 @@ export default function AcceptInviteModal({ open, onClose, token: inviteToken })
   if (typeof window === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-[520px] rounded-xl shadow-xl p-8 text-center relative">
+  <div className="fixed inset-0 z-50 bg-[#F9F9FF] overflow-y-auto">
+  
+  <div className="flex w-full items-center gap-2 px-6 py-5">
+    <Image src="/images/logo.svg" width={20} height={20} alt="logo" />
+    <h1 className="text-xl font-bold">TASKLY</h1>
+  </div>
 
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3"
-        >
-          <Image src="/images/close.png" alt="close" width={16} height={16} />
-        </button>
+  <div className="flex min-h-[calc(100vh-80px)] items-center justify-center p-4">
+    
+    <div className="relative w-full max-w-[520px] rounded-xl bg-white p-8 text-center shadow-xl">
+      
+      <button
+        onClick={onClose}
+        className="absolute right-3 top-3"
+      >
+        <Image
+          src="/images/close.png"
+          alt="close"
+          width={16}
+          height={16}
+        />
+      </button>
 
-        <div className="inline-flex items-center gap-2 bg-[#EEF2FF] text-[#3B82F6] text-xs font-medium px-3 py-1 rounded-full mb-6">
-          <Image src="/images/new.png" width={16} height={16} alt="" />
-          NEW PROJECT INVITATION
-        </div>
-
-        <h2 className="text-xl sm:text-2xl font-semibold text-[#0F172A] mb-6">
-          You’ve been invited to join <br />
-          <span className="font-bold">a new project</span>
-        </h2>
-
-        {successMsg && (
-          <p className="text-green-600 text-sm mb-4">{successMsg}</p>
-        )}
-
-        {errorMsg && (
-          <p className="text-red-500 text-sm mb-4">{errorMsg}</p>
-        )}
-
-        <button
-          onClick={handleAccept}
-          disabled={mutation.isPending}
-          className="w-full h-12 bg-blue-700 text-white rounded-md shadow-md hover:bg-blue-800 transition disabled:opacity-50"
-        >
-          {mutation.isPending ? "Accepting..." : "Accept Invitation"}
-        </button>
+      <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#EEF2FF] px-3 py-1 text-xs font-medium text-[#3B82F6]">
+        <Image src="/images/new.png" width={16} height={16} alt="" />
+        NEW PROJECT INVITATION
       </div>
-    </div>,
+
+      <h2 className="mb-6 text-xl font-semibold text-[#0F172A] sm:text-2xl">
+        You’ve been invited to join <br />
+        <span className="font-bold">a new project</span>
+      </h2>
+
+      {successMsg && (
+        <p className="mb-4 text-sm text-green-600">{successMsg}</p>
+      )}
+
+      {errorMsg && (
+        <p className="mb-4 text-sm text-red-500">{errorMsg}</p>
+      )}
+
+      <button
+        onClick={handleAccept}
+        disabled={mutation.isPending}
+        className="h-12 w-full rounded-md bg-blue-700 text-white shadow-md transition hover:bg-blue-800 disabled:opacity-50"
+      >
+        {mutation.isPending ? "Accepting..." : "Accept Invitation"}
+      </button>
+    </div>
+  </div>
+</div>,
     document.getElementById("modal-root")
   );
 }

@@ -13,6 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import Image from "next/image";
 
 const formatDate = (date) => {
   if (!date) return null;
@@ -39,6 +40,7 @@ export function DatePicker({ onChange }) {
   });
 
   const [error, setError] = useState("");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (onChange) {
@@ -162,14 +164,10 @@ export function DatePicker({ onChange }) {
     setError("");
   };
 
-  const daysInMonth = new Date(
-    currentYear,
-    currentMonth + 1,
-    0
-  ).getDate();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button className="flex w-[190px] items-center justify-center rounded-xl border border-[#d9deea] bg-white px-3 py-3 text-center text-[15px] font-semibold text-[#0d47c9] shadow-sm transition hover:bg-white">
           <div className="flex items-center gap-2">
@@ -196,7 +194,11 @@ export function DatePicker({ onChange }) {
             onClick={goPrevMonth}
             className="rounded-md px-2 py-1 hover:bg-[#f0f4ff]"
           >
-            ←
+            <Image
+            src="/images/arrowleft.svg"
+            width={10}
+            height={10}
+            alt="arrowlft"/>
           </button>
 
           <div className="flex items-center gap-2">
@@ -221,17 +223,18 @@ export function DatePicker({ onChange }) {
             onClick={goNextMonth}
             className="rounded-md px-2 py-1 hover:bg-[#f0f4ff]"
           >
-            →
+            <Image
+            src="/images/arrowright.svg"
+            width={10}
+            height={10}
+            alt="arrowright"/>
           </button>
         </div>
 
         {/* Days Header */}
         <div className="mb-2 grid grid-cols-7 gap-1 text-center">
           {["SU", "MO", "TU", "WE", "TH", "FR", "SA"].map((day) => (
-            <div
-              key={day}
-              className="text-[11px] font-medium text-[#9aa6c1]"
-            >
+            <div key={day} className="text-[11px] font-medium text-[#9aa6c1]">
               {day}
             </div>
           ))}
@@ -240,21 +243,14 @@ export function DatePicker({ onChange }) {
         <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
-            const currentDate = new Date(
-              currentYear,
-              currentMonth,
-              day
-            );
+            const currentDate = new Date(currentYear, currentMonth, day);
 
             const isFuture = currentDate > today;
 
             const isStart =
-              tempDate.from &&
-              isSameDay(currentDate, tempDate.from);
+              tempDate.from && isSameDay(currentDate, tempDate.from);
 
-            const isEnd =
-              tempDate.to &&
-              isSameDay(currentDate, tempDate.to);
+            const isEnd = tempDate.to && isSameDay(currentDate, tempDate.to);
 
             const isInRange =
               tempDate.from &&
@@ -277,9 +273,7 @@ export function DatePicker({ onChange }) {
                       : "hover:bg-[#edf3ff]"
                   }
                   ${
-                    isInRange
-                      ? "bg-[#dbe8ff] text-[#0d47c9]"
-                      : "text-[#23345d]"
+                    isInRange ? "bg-[#dbe8ff] text-[#0d47c9]" : "text-[#23345d]"
                   }
                   ${
                     isStart || isEnd
@@ -294,9 +288,7 @@ export function DatePicker({ onChange }) {
           })}
         </div>
 
-        {error && (
-          <p className="mt-3 text-sm text-red-500">{error}</p>
-        )}
+        {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
 
         <div className="mt-4 flex gap-3">
           <button
@@ -317,7 +309,6 @@ export function DatePicker({ onChange }) {
           >
             Reset
           </button>
-
           <button
             disabled={!tempDate.from || !tempDate.to}
             onClick={() => {
@@ -329,6 +320,8 @@ export function DatePicker({ onChange }) {
                   to: formatDate(tempDate.to),
                 });
               }
+
+              setOpen(false);
             }}
             className="flex-1 rounded-xl bg-[#0d47c9] py-2 text-white hover:bg-[#0b3cab] disabled:opacity-50"
           >
