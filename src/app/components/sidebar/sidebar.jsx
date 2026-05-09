@@ -18,6 +18,7 @@ export default function Sidebar() {
   const isProjectSelected = !!projectId;
 
   const projectLinks = [
+    
     {
       name: "Project Epics",
       icon: "/images/epics.svg",
@@ -120,6 +121,25 @@ export default function Sidebar() {
               }`}
             >
               <Image
+                src="/images/statistics.png"
+                width={20}
+                height={18}
+                alt="Projects"
+                className="w-5 h-5 shrink-0"
+              />
+
+              {open && (
+                <Link href="/my-statistics">
+                  <span className="text-sm font-medium">My Statistics</span>
+                </Link>
+              )}
+            </li>
+            <li
+              className={`flex items-center py-2 rounded-md hover:bg-gray-100 cursor-pointer transition ${
+                open ? "gap-3 px-2" : "justify-center px-0"
+              }`}
+            >
+              <Image
                 src="/images/proj.png"
                 width={20}
                 height={18}
@@ -172,11 +192,7 @@ export default function Sidebar() {
               })}
           </ul>
 
-          {!isProjectSelected && open && (
-            <p className="text-xs text-gray-400 px-5 mt-4">
-              Select a project first
-            </p>
-          )}
+       
         </nav>
 
         <div className="mt-auto px-2 py-5 flex flex-col gap-3">
