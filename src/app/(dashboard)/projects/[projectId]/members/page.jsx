@@ -50,9 +50,9 @@ const {
   return (<>
    <SendInvitationModal open={open} onClose={() => setOpen(false)} />
 
-    <div className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto overflow-x-hidden">
+    <div className="mx-auto w-full max-w-[1500px] overflow-x-hidden">
 
-      <h1 className="text-2xl font-semibold text-center lg:text-left mb-6">
+      <h1 className="mb-6 text-center text-2xl font-semibold lg:text-left">
         Project Members
       </h1>
 
@@ -70,9 +70,9 @@ const {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-lg bg-white shadow-sm">
 
-        <div className="hidden sm:grid grid-cols-3 p-4 text-xs text-gray-500 font-medium border-b">
+        <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(120px,0.7fr)_minmax(90px,0.4fr)] border-b p-4 text-xs font-medium text-gray-500 sm:grid">
           <p>MEMBER</p>
           <p>ROLE</p>
           <p>ACTIONS</p>
@@ -86,7 +86,7 @@ const {
             <div
               key={index}
               className="
-                flex flex-col sm:grid sm:grid-cols-3
+                flex flex-col sm:grid sm:grid-cols-[minmax(0,1.5fr)_minmax(120px,0.7fr)_minmax(90px,0.4fr)]
                 gap-3 sm:gap-0
                 p-4 border-b border-blue-100
                 hover:bg-blue-50 transition
@@ -110,13 +110,13 @@ const {
                 </span>
               </div>
 
-              <div className="hidden sm:block">
+              <div className="hidden sm:flex sm:items-center">
                 <span className="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full">
                   {member.role}
                 </span>
               </div>
 
-              <div className="flex justify-end sm:block cursor-pointer text-lg text-gray-500 ml-6">
+              <div className="flex cursor-pointer justify-end text-lg text-gray-500 sm:items-center">
                 ⋮
               </div>
             </div>

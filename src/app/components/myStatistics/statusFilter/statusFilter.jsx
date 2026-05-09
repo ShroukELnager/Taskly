@@ -6,10 +6,10 @@ import { DatePicker } from "../datePicker/datePicker";
 
 export default function StatsFilters({ setFilters }) {
  return (
-  <div className="flex flex-col items-center gap-4 rounded-2xl bg-[#F1F3FF] p-4 lg:flex-row lg:items-start lg:justify-between">
+  <div className="flex flex-col gap-4 rounded-lg bg-[#F1F3FF] p-4 lg:flex-row lg:items-start lg:justify-between">
     
     {/* mobile */}
-    <div className="flex flex-col items-center gap-3 lg:hidden">
+    <div className="flex w-full flex-col items-stretch gap-3 sm:items-center lg:hidden">
       <DatePicker
         onChange={(range) => {
           setFilters((prev) => ({
@@ -38,7 +38,7 @@ export default function StatsFilters({ setFilters }) {
     </div>
 
     {/* desktop */}
-    <div className="hidden w-full items-start justify-between lg:flex">
+    <div className="hidden w-full flex-wrap items-start justify-between gap-4 lg:flex">
       <DatePicker
         onChange={(range) => {
           setFilters((prev) => ({
@@ -53,7 +53,7 @@ export default function StatsFilters({ setFilters }) {
         }}
       />
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <ProjectsSelect
           onChange={(val) =>
             setFilters((prev) => ({ ...prev, project: val }))

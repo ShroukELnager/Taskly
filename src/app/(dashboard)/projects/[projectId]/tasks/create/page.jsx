@@ -77,8 +77,8 @@ export default function CreateTaskPage() {
   const isPending = isSubmitting || createTaskMutation.isPending;
 
   return (
-    <div className="min-h-screen flex justify-center p-3 sm:p-6 bg-[#F9F9FF]">
-      <div className="w-full max-w-3xl bg-white rounded-2xl p-4 sm:p-6 shadow-md">
+    <div className="mx-auto flex w-full max-w-[1500px] justify-center bg-[#F9F9FF] pb-10">
+      <div className="w-full max-w-3xl rounded-lg bg-white p-4 shadow-md sm:p-6">
         <h1 className="text-2xl font-semibold mb-1">Create New Task</h1>
         <p className="text-sm text-gray-500 mb-6">
           Initialize a new work item within the project ecosystem.

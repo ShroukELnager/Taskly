@@ -103,10 +103,10 @@ export default function MyStatistics() {
   };
 
   return (
-    <div className="w-full px-2">
+    <div className="mx-auto w-full max-w-[1500px]">
       <div className="hidden lg:block">
-  <StatsHeader />
-</div>
+        <StatsHeader />
+      </div>
 
       <StatsFilters setFilters={setFilters} />
 
@@ -128,7 +128,7 @@ export default function MyStatistics() {
     {statsData && (
   <>
     {/* TOP SECTION */}
-    <div className="mt-6 rounded-2xl bg-[#F7F8FC] p-4">
+    <div className="mt-6 rounded-lg bg-[#F7F8FC] p-4 sm:p-5">
       <StatsCards data={statsData} />
 
       <StatsGrid
@@ -138,7 +138,7 @@ export default function MyStatistics() {
     </div>
 
     {/* BOTTOM CARDS */}
-    <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
       
       {/* LEFT */}
       <TotalsCard totals={statsData.totals} />

@@ -26,8 +26,8 @@ export default function Breadcrumbs() {
   }, [pathname, projectsMap, projectId]);
 
   return (
-    <nav className="flex mb-6" aria-label="Breadcrumb">
-      <ol className="inline-flex items-center space-x-1">
+    <nav className="mb-6 min-w-0 overflow-x-auto" aria-label="Breadcrumb">
+      <ol className="inline-flex min-w-max items-center space-x-1">
         {breadcrumbs.map((breadcrumb, index) => (
           <li key={breadcrumb.href} className="inline-flex items-center">
             {index > 0 && (

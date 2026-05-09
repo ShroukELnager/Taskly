@@ -35,8 +35,9 @@ export async function login(data) {
 }
 
 export async function logout() {
-  const res = await fetch("/api/auth/logout", {
+  const res = await fetch("/api/auth/logOut", {
     method: "POST",
+    credentials: "include",
   });
 
   const result = await res.json();

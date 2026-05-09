@@ -5,6 +5,8 @@ import React, { useState } from "react";
 import Cookies from "js-cookie";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
+import { logout } from "@/app/services/auth.service";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(true);
@@ -16,6 +18,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const isProjectSelected = !!projectId;
+  const showLabels = open || mobileOpen;
 
   const projectLinks = [
     
@@ -41,42 +44,32 @@ export default function Sidebar() {
     },
   ];
 
-  const handleLogout = async () => {
-    try {
-      setError("");
 
-      const token = Cookies.get("access_token");
+const { mutate: handleLogout, isPending } = useMutation({
+  mutationFn: logout,
 
-      const res = await fetch(
-        "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1/logout",
-        {
-          method: "POST",
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+  onSuccess: () => {
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    Cookies.remove("expires_at");
+    Cookies.remove("access_token_expiry");
 
-      if (!res.ok) throw new Error("Logout failed");
+    router.replace("/login");
+  },
 
-      Cookies.remove("access_token");
-      Cookies.remove("refresh_token");
-      Cookies.remove("user");
-
-      router.push("/login");
-    } catch (err) {
-      setError("Logout failed, please try again.");
-    }
-  };
+  onError: () => {
+    setError("Logout failed, please try again.");
+  },
+});
 
   return (
     <>
-      <div className="md:hidden flex items-start justify-start p-3 bg-[#F1F3FF]">
-        <div className="flex items-center gap-2">
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-gray-200/70 bg-[#F1F3FF] px-4 md:hidden">
+        <div className="flex min-w-0 items-center gap-2">
           <button
             onClick={() => setMobileOpen(true)}
-            className="text-2xl md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-white/70"
+            aria-label="Open menu"
           >
             <Image
               src="/images/humberger.png"
@@ -85,150 +78,160 @@ export default function Sidebar() {
               alt="menu"
             />
           </button>
-          <span className="font-bold">TASKLY</span>
+          <span className="truncate font-bold">TASKLY</span>
         </div>
       </div>
 
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-black/40 md:hidden"
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
         />
       )}
 
       <div
         className={`
-          fixed md:static top-0 left-0 z-50
-          min-h-screen bg-[#F1F3FF] border-r border-gray-200/60 flex flex-col
+          fixed left-0 top-0 z-50
+          flex h-dvh flex-col border-r border-gray-200/60 bg-[#F1F3FF]
           transition-all duration-300
-          ${open ? "w-64" : "w-20"}
+          w-72 md:sticky md:z-30 ${open ? "md:w-64" : "md:w-20"}
           ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
-        <div className="flex items-center gap-2 px-5 py-4">
+        <div className="flex h-16 items-center gap-2 px-5">
           <Image src="/images/logo.svg" width={28} height={28} alt="logo" />
 
-          {open && (
-            <h1 className="font-bold text-xl whitespace-nowrap">TASKLY</h1>
+          {showLabels && (
+            <h1 className="truncate text-xl font-bold whitespace-nowrap">TASKLY</h1>
           )}
         </div>
 
-        <nav className="flex-1 px-2 py-6">
-          <ul className="flex flex-col gap-4 px-5">
-            <li
-              className={`flex items-center py-2 rounded-md hover:bg-gray-100 cursor-pointer transition ${
-                open ? "gap-3 px-2" : "justify-center px-0"
-              }`}
-            >
-              <Image
-                src="/images/statistics.png"
-                width={20}
-                height={18}
-                alt="Projects"
-                className="w-5 h-5 shrink-0"
-              />
+        <nav className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
+          <ul className="flex flex-col gap-2">
+            <li>
+              <Link
+                href="/my-statistics"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center rounded-md py-3 hover:bg-gray-100 transition ${
+                  showLabels ? "gap-3 px-4" : "justify-center px-0"
+                }`}
+              >
+                <Image
+                  src="/images/statistics.png"
+                  width={20}
+                  height={18}
+                  alt="Statistics"
+                  className="h-5 w-5 shrink-0"
+                />
 
-              {open && (
-                <Link href="/my-statistics">
-                  <span className="text-sm font-medium">My Statistics</span>
-                </Link>
-              )}
+                {showLabels && (
+                  <span className="truncate text-sm font-medium">
+                    My Statistics
+                  </span>
+                )}
+              </Link>
             </li>
-            <li
-              className={`flex items-center py-2 rounded-md hover:bg-gray-100 cursor-pointer transition ${
-                open ? "gap-3 px-2" : "justify-center px-0"
-              }`}
-            >
-              <Image
-                src="/images/proj.png"
-                width={20}
-                height={18}
-                alt="Projects"
-                className="w-5 h-5 shrink-0"
-              />
+            <li>
+              <Link
+                href="/projects"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center rounded-md py-3 hover:bg-gray-100 transition ${
+                  showLabels ? "gap-3 px-4" : "justify-center px-0"
+                }`}
+              >
+                <Image
+                  src="/images/proj.png"
+                  width={20}
+                  height={18}
+                  alt="Projects"
+                  className="h-5 w-5 shrink-0"
+                />
 
-              {open && (
-                <Link href="/projects">
-                  <span className="text-sm font-medium">Projects</span>
-                </Link>
-              )}
+                {showLabels && (
+                  <span className="truncate text-sm font-medium">Projects</span>
+                )}
+              </Link>
             </li>
+
+            {isProjectSelected && showLabels && (
+              <li className="px-4 pt-4 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                Project
+              </li>
+            )}
 
             {isProjectSelected &&
               projectLinks.map((link) => {
                 const active = pathname === link.href;
 
                 return (
-                  <li
-                    key={link.name}
-                    className={`flex items-center py-3 rounded-md transition
-                    ${
-                      !isProjectSelected
-                        ? "opacity-40 cursor-not-allowed"
-                        : "hover:bg-gray-100 cursor-pointer"
-                    }
-                    ${open ? "gap-4 px-2" : "justify-center px-0"}
-                    ${active ? "bg-white" : ""}
-                  `}
-                  >
-                    <Image
-                      src={link.icon}
-                      width={20}
-                      height={18}
-                      alt={link.name}
-                      className="w-5 h-5 shrink-0"
-                    />
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center rounded-md py-3 transition ${
+                        showLabels ? "gap-3 px-4" : "justify-center px-0"
+                      } ${active ? "bg-white text-blue-700 shadow-sm" : "hover:bg-gray-100"}`}
+                    >
+                      <Image
+                        src={link.icon}
+                        width={20}
+                        height={18}
+                        alt={link.name}
+                        className="h-5 w-5 shrink-0"
+                      />
 
-                    {open &&
-                      (isProjectSelected ? (
-                        <Link href={link.href} className="text-sm">
-                          {link.name}
-                        </Link>
-                      ) : (
-                        <span className="text-sm">{link.name}</span>
-                      ))}
+                      {showLabels && (
+                        <span className="truncate text-sm">{link.name}</span>
+                      )}
+                    </Link>
                   </li>
                 );
               })}
           </ul>
-
-       
         </nav>
 
-        <div className="mt-auto px-2 py-5 flex flex-col gap-3">
+        <div className="mt-auto flex flex-col gap-2 border-t border-gray-200/60 px-2 py-4">
           <button
             onClick={() => setOpen(!open)}
-            className={`hidden md:flex items-center py-3 rounded-md hover:bg-gray-100 transition ${
-              open ? "gap-4 px-5" : "justify-center px-0"
+            className={`hidden items-center rounded-md py-3 hover:bg-gray-100 transition md:flex ${
+              open ? "gap-3 px-4" : "justify-center px-0"
             }`}
+            aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
           >
             <Image
               src={open ? "/images/arrowleft.svg" : "/images/arrowright.svg"}
               width={10}
               height={10}
-              alt="toggle"
+              alt=""
               className="shrink-0"
             />
-            {open && <span>Collapse</span>}
+            {open && <span className="text-sm">Collapse</span>}
           </button>
 
-          <div
-            onClick={handleLogout}
-            className={`flex items-center py-3 rounded-md hover:bg-gray-100 cursor-pointer transition ${
-              open ? "gap-4 px-5" : "justify-center px-0"
-            }`}
+          <button
+            onClick={() => handleLogout()}
+            disabled={isPending}
+            className={`flex items-center rounded-md py-3 hover:bg-gray-100 transition ${
+              showLabels ? "gap-3 px-4" : "justify-center px-0"
+            } disabled:cursor-not-allowed disabled:opacity-60`}
           >
             <Image
               src="/images/logout.svg"
               width={20}
               height={18}
-              alt="logout"
-              className="w-5 h-5 shrink-0"
+              alt=""
+              className="h-5 w-5 shrink-0"
             />
-            {open && <span>Logout</span>}
-          </div>
+            {showLabels && (
+              <span className="text-sm">
+                {isPending ? "Logging out..." : "Logout"}
+              </span>
+            )}
+          </button>
 
-          {error && <p className="text-red-500 text-xs px-5">{error}</p>}
+          {error && showLabels && (
+            <p className="px-4 text-xs text-red-500">{error}</p>
+          )}
         </div>
       </div>
     </>

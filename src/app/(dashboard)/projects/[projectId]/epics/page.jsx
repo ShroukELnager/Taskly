@@ -98,21 +98,21 @@ export default function EpicsPage() {
     );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center pb-24 sm:pb-10">
-      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+    <div className="bg-gray-50 pb-24 sm:pb-10">
+      <div className="mx-auto w-full max-w-[1500px]">
 
-      <div className="flex items-center justify-between mb-6 pt-4">
-  <h1 className="text-2xl font-semibold hidden lg:block">
+      <div className="mb-6 flex flex-col gap-3 pt-4 lg:flex-row lg:items-center lg:justify-between">
+  <h1 className="hidden text-2xl font-semibold lg:block">
     Project Epics
   </h1>
 
-  <div className="flex items-center gap-3">
+  <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:items-center">
     <input
       type="text"
       value={search}
       onChange={handleSearchChange}
       placeholder="Search epics..."
-      className="pl-3 pr-3 py-2 rounded-md bg-[#D4DEFB] text-sm outline-none"
+      className="w-full rounded-md bg-[#D4DEFB] px-3 py-2 text-sm outline-none sm:w-80"
     />
 
     <button
@@ -126,7 +126,7 @@ export default function EpicsPage() {
   </div>
 </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-10">
+        <div className="grid grid-cols-1 gap-5 pb-10 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {epics.length > 0 ? (
             epics.map((epic) => {
               const name =
@@ -147,7 +147,7 @@ export default function EpicsPage() {
                     setSelectedEpicId(epic.id);
                     setIsModalOpen(true);
                   }}
-                  className="bg-white border-l-4 border-blue-600 rounded-xl p-4 shadow-sm cursor-pointer"
+                  className="min-h-[168px] cursor-pointer rounded-lg border-l-4 border-blue-600 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <span className="text-xs text-blue-600">
                     {epic.epic_id}
@@ -158,15 +158,15 @@ export default function EpicsPage() {
                   </h2>
 
                   <div className="flex items-center gap-3 mt-4">
-                    <div className="w-10 h-10 bg-blue-600 text-white flex items-center justify-center rounded-lg">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
                       {initials}
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-gray-400">
                         Assignee
                       </p>
-                      <p className="text-sm">{name}</p>
+                      <p className="truncate text-sm">{name}</p>
                     </div>
                   </div>
                 </div>

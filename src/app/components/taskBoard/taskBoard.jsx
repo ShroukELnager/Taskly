@@ -119,13 +119,13 @@ export default function TaskBoard({ search }) {
 
   return (
 <DndContext onDragEnd={handleDragEnd}>
-  <div className="p-2 bg-[#F9F9FF] min-h-screen w-full overflow-x-auto overflow-y-visible">
+  <div className="w-full overflow-x-auto overflow-y-visible bg-[#F9F9FF] pb-6">
     {mutationError && (
       <div className="sticky left-0 mb-3 w-fit max-w-full rounded-md bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
         {mutationError}
       </div>
     )}
-    <div className="flex gap-4 w-max">
+    <div className="flex w-max gap-4 pr-4">
       {STATUSES.map((status) => (
         <TaskColumn
           key={status}

@@ -4,7 +4,7 @@ import StatusItem from "../StatusItem/StatusItem";
 
 export default function StatsGrid({ data, statusColors }) {
   return (
-    <div className="flex flex-col gap-3 md:grid md:grid-cols-4 lg:grid-cols-7 lg:gap-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-7 xl:gap-5">
       {data.daily?.map((item, index) => {
         const currentDate = new Date(item.day);
         const today = isToday(currentDate);
@@ -13,8 +13,9 @@ export default function StatsGrid({ data, statusColors }) {
           <div
             key={index}
             className={`
-              relative flex items-center justify-between rounded-2xl bg-[#F7F8FF] p-4
-              md:min-h-[500px] md:flex-col md:items-start md:justify-start md:bg-white
+              relative flex min-h-[116px] items-center justify-between rounded-lg bg-[#F7F8FF] p-4
+              md:min-h-[420px] md:flex-col md:items-start md:justify-start md:bg-white
+              xl:min-h-[500px]
               ${
                 today
                   ? "border-2 border-blue-600"
@@ -30,7 +31,7 @@ export default function StatsGrid({ data, statusColors }) {
             )}
 
             {/* LEFT SIDE */}
-            <div className="flex items-center gap-3 md:block">
+            <div className="flex min-w-0 items-center gap-3 md:block">
               {/* day/date */}
               <div>
                 <p className="text-xs uppercase text-gray-400">
@@ -46,7 +47,7 @@ export default function StatsGrid({ data, statusColors }) {
               <div className="h-10 w-px bg-gray-200 md:hidden" />
 
               {/* statuses mobile */}
-              <div className="flex items-center gap-2 md:hidden">
+              <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 md:hidden">
                 {Object.entries(item.statuses || {}).length > 0 ? (
                   Object.entries(item.statuses).map(
                     ([status, count], idx) => (
@@ -67,7 +68,7 @@ export default function StatsGrid({ data, statusColors }) {
             </div>
 
             {/* desktop statuses */}
-            <div className="hidden flex-col gap-2 md:flex">
+            <div className="hidden w-full min-w-0 flex-col gap-2 md:flex">
               {Object.entries(item.statuses || {}).length > 0 ? (
                 Object.entries(item.statuses).map(([status, count], idx) => (
                   <StatusItem

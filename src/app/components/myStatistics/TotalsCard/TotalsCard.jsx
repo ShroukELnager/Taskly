@@ -42,7 +42,7 @@ export default function TotalsCard({ totals }) {
   };
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm md:p-6">
+    <div className="rounded-lg bg-white p-4 shadow-sm md:p-6">
       
       {/* TITLE */}
       <h2 className="mb-4 text-lg font-semibold text-slate-800">
@@ -50,10 +50,10 @@ export default function TotalsCard({ totals }) {
       </h2>
 
       {/* MAIN WRAPPER */}
-      <div className="flex flex-col items-center gap-6 md:flex-row md:items-center md:gap-8">
+      <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-center lg:gap-8">
         
         {/* DONUT */}
-        <div className="relative h-[160px] w-[160px] md:h-[220px] md:w-[220px]">
+        <div className="relative h-[160px] w-[160px] shrink-0 md:h-[220px] md:w-[220px]">
           <Doughnut data={data} options={options} />
 
           <div className="absolute inset-0 flex flex-col items-center justify-center">

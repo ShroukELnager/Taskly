@@ -40,7 +40,7 @@ export default function TaskList({ search }) {
     enabled: !!projectId,
   });
 
-  const allTasks = data?.data || [];
+  const allTasks = useMemo(() => data?.data || [], [data?.data]);
 
   // =========================
   // Client-side pagination
@@ -63,11 +63,11 @@ export default function TaskList({ search }) {
   };
 
   const goToCreateTask = () => {
-    router.push(`/project/${projectId}/tasks/create`);
+    router.push(`/projects/${projectId}/tasks/create`);
   };
 
   return (
-    <div className="p-6 bg-[#F9F9FF] min-h-screen">
+    <div className="mx-auto w-full max-w-[1500px] bg-[#F9F9FF] py-4">
       {/* ADD BUTTON */}
       <div className="flex flex-col sm:flex-row sm:items-center mb-6 gap-3 lg:justify-end">
         <button
@@ -108,8 +108,9 @@ export default function TaskList({ search }) {
       </div>
 
       {/* DESKTOP */}
-      <div className="hidden lg:block bg-white rounded-xl overflow-hidden">
-        <div className="grid grid-cols-6 text-sm font-semibold p-3 bg-gray-50">
+      <div className="hidden overflow-x-auto rounded-lg bg-white lg:block">
+        <div className="min-w-[900px]">
+        <div className="grid grid-cols-6 bg-gray-50 p-3 text-sm font-semibold">
           <div>Task</div>
           <div>Title</div>
           <div>Status</div>
@@ -153,6 +154,7 @@ export default function TaskList({ search }) {
             </div>
           ))
         )}
+        </div>
       </div>
 
       {/* PAGINATION */}

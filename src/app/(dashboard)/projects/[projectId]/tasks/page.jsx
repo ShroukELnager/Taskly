@@ -10,18 +10,18 @@ export default function Tasks() {
   const [search, setSearch] = useState("");
   return (
     <>
-      <div className="w-full px-2">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
-          <div className="text-center lg:text-left w-full">
-            <h1 className="text-xl font-semibold">Active Workboard</h1>
+      <div className="mx-auto w-full max-w-[1500px]">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="w-full text-center lg:text-left">
+            <h1 className="text-2xl font-semibold">Active Workboard</h1>
 
             <p className="hidden lg:block text-sm text-gray-500">
               Curating project tasks by status
             </p>
           </div>
 
-          <div className="flex flex-col items-center lg:flex-row lg:items-center gap-3 w-full lg:w-auto">
-            <div className="flex items-center bg-[#e9eef8] px-3 py-2 rounded-lg w-full max-w-md lg:w-64">
+          <div className="flex w-full flex-col items-stretch gap-3 sm:items-center lg:w-auto lg:flex-row lg:items-center">
+            <div className="flex w-full items-center rounded-lg bg-[#e9eef8] px-3 py-2 sm:max-w-md lg:w-72 xl:w-80">
               <Image
                 src="/images/search.svg"
                 alt="Search"
@@ -111,9 +111,9 @@ export default function Tasks() {
         <TaskList />
       </div>
 
-      <div className="hidden lg:block w-full min-w-0">
+      <div className="hidden w-full min-w-0 lg:block">
         {view === "board" ? (
-          <div className="w-full min-w-0 overflow-x-auto">
+          <div className="mx-auto w-full max-w-[1500px] min-w-0 overflow-x-auto">
             <TaskBoard search={search} />
           </div>
         ) : (

@@ -187,7 +187,7 @@
 
 import Image from "next/image";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -203,15 +203,15 @@ export default function Create() {
   const {
     register,
     handleSubmit,
+    control,
     reset,
-    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(CreateProjSchema),
     mode: "onSubmit",
   });
 
-  const description = watch("description") || "";
+  const description = useWatch({ control, name: "description" }) || "";
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createProject,
@@ -238,24 +238,24 @@ export default function Create() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="p-4 flex justify-between items-center">
-        <h1 className="font-semibold text-3xl">Add New Project</h1>
+    <div className="mx-auto flex w-full max-w-[1500px] flex-col bg-gray-50 pb-10">
+      <div className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-semibold sm:text-3xl">Add New Project</h1>
 
-        <button className="bg-[#014CBF] text-white py-2 px-4 rounded-md hover:bg-blue-600 flex items-center gap-2">
+        <button className="flex items-center justify-center gap-2 rounded-md bg-[#014CBF] px-4 py-2 text-white hover:bg-blue-600">
           <Image src="/images/invite.svg" alt="plus" width={16} height={16} />
           <p className="text-sm font-medium">Invite Member</p>
         </button>
       </div>
 
-      <div className="flex-1 flex justify-center items-center px-4">
-        <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="flex flex-1 justify-center">
+        <div className="w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-sm">
           <form
-            className="p-6 flex flex-col gap-5"
+            className="flex flex-col gap-5 p-4 sm:p-6"
             onSubmit={handleSubmit(onSubmit)}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-[40px] h-[40px] bg-[#E5EEFA] rounded-lg flex items-center justify-center">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E5EEFA]">
                 <Image
                   src="/images/projIcon.svg"
                   alt="project"
@@ -264,11 +264,11 @@ export default function Create() {
                 />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <h1 className="font-semibold text-lg">
                   Initialize New Project
                 </h1>
-                <p className="text-gray-600 text-sm">
+                <p className="text-sm text-gray-600">
                   Define the scope and foundational details of your project.
                 </p>
               </div>

@@ -57,18 +57,19 @@ export default function Projects() {
     },
   });
 
-  const projects = data?.pages?.flatMap((p) => p.data) ?? [];
-
+const projects = Array.from(
+  new Map(data?.pages?.flatMap(p => p.data).map(p => [p.id, p])).values()
+);
   const totalCount =
     data?.pages?.[0]?.totalCount ?? 0;
 
   return (
-    <div className="min-h-full bg-gray-50 flex justify-center pb-24 sm:pb-10">
-      <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+    <div className="min-h-full bg-gray-50 pb-24 sm:pb-10">
+      <div className="mx-auto w-full max-w-[1500px]">
 
-        <div className="p-4 flex justify-between items-center flex-col sm:flex-row gap-4 sm:gap-0">
+        <div className="flex flex-col items-start justify-between gap-4 py-4 sm:flex-row sm:items-center">
           <div className="text-center sm:text-left w-full">
-            <h1 className="font-semibold text-3xl">Projects</h1>
+            <h1 className="text-2xl font-semibold sm:text-3xl">Projects</h1>
             <p className="text-gray-600 text-sm">
               Manage and create your projects
             </p>
@@ -96,7 +97,7 @@ export default function Projects() {
         )}
 
         {isLoading && (
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {[...Array(limit)].map((_, i) => (
               <SkeletonCard key={i} />
             ))}
@@ -111,15 +112,15 @@ export default function Projects() {
 
         {!isLoading && !error && projects.length > 0 && (
           <>
-            <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+            <div className="grid grid-cols-1 gap-5 pb-20 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
 
               {projects.map((project) => (
                 <div
-                  key={project.id}
+                  key={`${project.id}`}
                   onClick={() =>
                     router.push(`/projects/${project.id}/epics`)
                   }
-                  className="bg-white rounded-xl p-5 shadow-sm hover:shadow-md hover:scale-105 transition cursor-pointer"
+                  className="min-h-[190px] cursor-pointer rounded-lg bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <h2 className="text-lg font-semibold text-gray-900">
                     {project.name || "Untitled Project"}
@@ -148,7 +149,7 @@ export default function Projects() {
                 </div>
               ))}
 
-              <div className="bg-white border border-dashed hover:scale-105 hover:shadow-md rounded-xl p-5 flex flex-col justify-between cursor-pointer hover:bg-gray-50">
+              <div className="flex min-h-[190px] cursor-pointer flex-col justify-between rounded-lg border border-dashed bg-white p-5 transition hover:-translate-y-0.5 hover:bg-gray-50 hover:shadow-md">
                 <div
                   onClick={() => router.push("/projects/create")}
                   className="flex flex-col items-center justify-center h-full text-center text-gray-500"
@@ -167,7 +168,7 @@ export default function Projects() {
               </div>
             </div>
 
-            <div className="hidden sm:block px-4 pb-20">
+            <div className="hidden pb-20 sm:block">
               <Pagination
                 currentPage={1}
                 totalCount={totalCount}

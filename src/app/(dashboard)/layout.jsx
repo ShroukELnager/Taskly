@@ -6,27 +6,20 @@ import Breadcrumbs from "../components/breadCrumb/breadCrumb";
 
 export default function Dashboardlayout({ children }) {
   return (
-    <div className="h-screen overflow-hidden bg-[#F9F9FF] flex justify-center">
+    <div className="min-h-dvh bg-[#F9F9FF]">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[1920px]">
+        <Sidebar />
 
-      <div className="w-full max-w-[1440px] flex h-screen">
+        <div className="flex min-h-dvh min-w-0 flex-1 flex-col pt-14 md:pt-0">
+          <Navbar />
 
-        <div className="h-full bg-[#F1F3FF]">
-          <Sidebar />
-        </div>
-
-        <div className="flex flex-col flex-1 h-full min-h-0 min-w-0">
-
-          <div className="w-full">
-            <Navbar />
-          </div>
-
-          <div className="flex-1 min-h-0 min-w-0 overflow-y-auto p-4 bg-[#F9F9FF]">
-            <Breadcrumbs/>
+          <div className="min-w-0 flex-1 bg-[#F9F9FF] px-4 py-4 sm:px-6 sm:py-5 lg:px-8 xl:px-10">
+            <div className="mx-auto w-full max-w-[1600px]">
+              <Breadcrumbs />
             {children}
+            </div>
           </div>
-
         </div>
-
       </div>
     </div>
   );

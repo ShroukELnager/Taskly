@@ -77,12 +77,12 @@ export default function CreateEpic() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="flex-1 flex justify-center items-center px-4">
-        <div className="w-full max-w-2xl bg-white rounded-xl shadow-sm">
+    <div className="mx-auto flex w-full max-w-[1500px] flex-col bg-gray-50 pb-10">
+      <div className="flex flex-1 justify-center">
+        <div className="w-full max-w-2xl rounded-lg bg-white shadow-sm">
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="p-6 flex flex-col gap-5"
+            className="flex flex-col gap-5 p-4 sm:p-6"
           >
             {/* TITLE */}
             <div>
@@ -145,7 +145,7 @@ export default function CreateEpic() {
               />
             </div>
 
-            <div className="flex justify-between mt-3">
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:justify-between">
               <button
                 type="button"
                 onClick={() =>

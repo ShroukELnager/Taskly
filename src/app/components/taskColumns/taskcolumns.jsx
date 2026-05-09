@@ -55,7 +55,10 @@ export default function TaskColumn({ status, projectId, search }) {
   };
 
   return (
-    <div ref={setNodeRef} className="w-[270px] shrink-0 flex flex-col">
+    <div
+      ref={setNodeRef}
+      className="flex w-[min(78vw,290px)] shrink-0 flex-col xl:w-[300px]"
+    >
       {/* HEADER */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-xs font-semibold text-gray-600">

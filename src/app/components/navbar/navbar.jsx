@@ -6,6 +6,8 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { getValidAccessToken } from "@/app/lib/auth/auth";
 import { fetchUsers } from "@/app/features/users/usersThunk";
+import { useMutation } from "@tanstack/react-query";
+import { logout } from "@/app/services/auth.service";
 
 export default function Navbar() {
   const user = useSelector((state) => state.users.user);
@@ -57,66 +59,55 @@ export default function Navbar() {
     syncAuth();
   }, [dispatch]);
 
-  const handleLogout = async () => {
-    try {
-      setError("");
 
-      const token = Cookies.get("access_token");
+const { mutate: handleLogout, isPending } = useMutation({
+  mutationFn: logout,
 
-      const res = await fetch(
-        "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1/logout",
-        {
-          method: "POST",
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+  onSuccess: () => {
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    Cookies.remove("expires_at");
+    Cookies.remove("access_token_expiry");
 
-      if (!res.ok) throw new Error("Logout failed");
+    router.replace("/login");
+  },
 
-      Cookies.remove("access_token");
-      Cookies.remove("refresh_token");
-      Cookies.remove("access_token_expiry");
-
-      router.push("/login");
-    } catch (err) {
-      setError("Logout failed, please try again.");
-    }
-  };
+  onError: () => {
+    setError("Logout failed, please try again.");
+  },
+});
 
   return (
-    <div className="w-full h-16 bg-[#F9F9FF] border-b border-gray-300/60 flex items-center px-4">
+    <div className="sticky top-14 z-30 flex h-16 w-full items-center border-b border-gray-300/60 bg-[#F9F9FF]/95 px-4 backdrop-blur md:top-0 sm:px-6 lg:px-8">
       <div
-        className="flex items-center gap-3 ml-auto relative"
+        className="relative ml-auto flex min-w-0 items-center gap-3"
         ref={dropdownRef}
       >
         {/* user info */}
-        <div className="hidden sm:block text-right">
-          <p className="text-sm font-semibold">{name}</p>
-          <p className="text-xs text-gray-500">{jobTitle}</p>
+        <div className="hidden max-w-[220px] text-right sm:block lg:max-w-[320px]">
+          <p className="truncate text-sm font-semibold">{name}</p>
+          <p className="truncate text-xs text-gray-500">{jobTitle}</p>
         </div>
 
         {/* avatar */}
         <div
           onClick={() => setOpen(!open)}
-          className="w-10 h-10 bg-blue-600 text-white flex items-center justify-center rounded-lg border cursor-pointer"
+          className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border bg-blue-600 text-sm font-semibold text-white"
         >
           {initials}
         </div>
 
         {/* dropdown */}
         {open && (
-          <div className="absolute right-0 top-14 w-72 bg-white rounded-2xl shadow-xl p-4 space-y-4 z-50 animate-fadeIn">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 text-white flex items-center justify-center rounded-full text-sm font-semibold">
+          <div className="animate-fadeIn absolute right-0 top-14 z-50 w-[min(calc(100vw-2rem),18rem)] rounded-xl bg-white p-4 shadow-xl">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
                 {initials}
               </div>
 
-              <div>
-                <p className="text-sm font-semibold text-gray-800">{name}</p>
-                <p className="text-xs text-gray-500">{email}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-gray-800">{name}</p>
+                <p className="truncate text-xs text-gray-500">{email}</p>
               </div>
             </div>
 
@@ -125,10 +116,11 @@ export default function Navbar() {
             )}
 
             <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 transition rounded-xl py-2 text-sm font-medium"
+              onClick={() => handleLogout()}
+              disabled={isPending}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-red-50 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Logout
+              {isPending ? "Logging out..." : "Logout"}
             </button>
           </div>
         )}

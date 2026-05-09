@@ -5,25 +5,22 @@ export async function POST() {
   const cookieStore = await cookies();
 
   const { access_token } = await getTokens();
-
-  if (!access_token) {
-    return Response.json({ error: "No token found" }, { status: 401 });
-  }
-
   const apiKey = process.env.API_KEY?.trim();
   const baseUrl = "https://pcufxstnppfqmzgslxlk.supabase.co/auth/v1";
 
-  if (!apiKey) {
+  if (access_token && !apiKey) {
     return Response.json({ error: "Missing API key" }, { status: 500 });
   }
 
-  await fetch(`${baseUrl}/logout`, {
-    method: "POST",
-    headers: {
-      apikey: apiKey,
-      Authorization: `Bearer ${access_token}`,
-    },
-  });
+  if (access_token) {
+    await fetch(`${baseUrl}/logout`, {
+      method: "POST",
+      headers: {
+        apikey: apiKey,
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+  }
 
   cookieStore.delete("access_token");
   cookieStore.delete("refresh_token");
