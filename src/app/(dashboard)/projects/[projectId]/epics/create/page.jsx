@@ -12,7 +12,6 @@ import { required } from "zod/v4-mini";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-// SERVICES
 import { getProjectMembers } from "@/app/services/members.service";
 import { createEpic } from "@/app/services/epics.service";
 
@@ -37,9 +36,7 @@ export default function CreateEpic() {
     mode: "onSubmit",
   });
 
-  // =========================
-  // GET MEMBERS (React Query instead of useEffect)
-  // =========================
+ 
   const { data: members = [], isLoading: loadingMembers } = useQuery({
     queryKey: ["project-members", projectId],
     queryFn: () => getProjectMembers(projectId),
@@ -47,9 +44,7 @@ export default function CreateEpic() {
     select: (res) => res?.data || res || [],
   });
 
-  // =========================
-  // CREATE EPIC (React Query Mutation)
-  // =========================
+
   const createEpicMutation = useMutation({
     mutationFn: createEpic,
     onSuccess: () => {
@@ -84,7 +79,6 @@ export default function CreateEpic() {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-5 p-4 sm:p-6"
           >
-            {/* TITLE */}
             <div>
               <label className="text-xs text-gray-500">Title</label>
 

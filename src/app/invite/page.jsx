@@ -14,7 +14,6 @@ export default function InvitePage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // ❌ لو مفيش token → ارجع home
     if (!token) {
       router.replace("/");
       return;
@@ -30,13 +29,11 @@ export default function InvitePage() {
           credentials: "include",
         });
 
-        // ❌ مش logged in → روح login
         if (!res.ok) {
           router.replace(loginRedirect);
           return;
         }
 
-        // ✅ logged in → افتح المودال
         setOpen(true);
       } catch {
         router.replace(loginRedirect);
@@ -48,13 +45,12 @@ export default function InvitePage() {
     checkAuth();
   }, [token, router]);
 
-  // ⏳ أثناء التحقق
   if (checkingAuth) return null;
 
   return (
     <AcceptInviteModal
       open={open}
-      token={token} // 🔥 مهم جدًا
+      token={token} 
       onClose={() => router.replace("/")}
     />
   );

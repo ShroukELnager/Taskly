@@ -42,9 +42,7 @@ export default function TaskList({ search }) {
 
   const allTasks = useMemo(() => data?.data || [], [data?.data]);
 
-  // =========================
-  // Client-side pagination
-  // =========================
+
   const tasks = useMemo(() => {
     const start = (page - 1) * limit;
     const end = start + limit;
@@ -53,9 +51,7 @@ export default function TaskList({ search }) {
 
   const totalCount = allTasks.length;
 
-  // =========================
-  // handlers
-  // =========================
+  
   const openTask = (taskId) => {
     if (!taskId) return;
     setSelectedTaskId(taskId);
@@ -68,7 +64,6 @@ export default function TaskList({ search }) {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] bg-[#F9F9FF] py-4">
-      {/* ADD BUTTON */}
       <div className="flex flex-col sm:flex-row sm:items-center mb-6 gap-3 lg:justify-end">
         <button
           onClick={goToCreateTask}
@@ -78,7 +73,6 @@ export default function TaskList({ search }) {
         </button>
       </div>
 
-      {/* MOBILE */}
       <div className="lg:hidden space-y-4">
         {isLoading ? (
           <p className="text-sm text-gray-500">Loading...</p>
@@ -107,7 +101,6 @@ export default function TaskList({ search }) {
         )}
       </div>
 
-      {/* DESKTOP */}
       <div className="hidden overflow-x-auto rounded-lg bg-white lg:block">
         <div className="min-w-[900px]">
         <div className="grid grid-cols-6 bg-gray-50 p-3 text-sm font-semibold">
@@ -157,7 +150,6 @@ export default function TaskList({ search }) {
         </div>
       </div>
 
-      {/* PAGINATION */}
       <Pagination
         currentPage={page}
         totalCount={totalCount}
@@ -168,7 +160,6 @@ export default function TaskList({ search }) {
         label="tasks"
       />
 
-      {/* MODAL */}
       <TaskDetailsModal
         taskId={selectedTaskId}
         projectId={projectId}

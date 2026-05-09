@@ -56,7 +56,6 @@ export async function PATCH(req, { params }) {
   try {
     const { access_token } = await getTokens();
 
-    // ✅ check token
     if (!access_token) {
       return handleError("Unauthorized", 401);
     }

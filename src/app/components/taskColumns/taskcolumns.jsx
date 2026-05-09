@@ -15,10 +15,8 @@ export default function TaskColumn({ status, projectId, search }) {
 
   const router = useRouter();
 
-  // ✅ debounce search
   const debouncedSearch = useDebounce(search, 400);
 
-  // ✅ هنا الصح: استخدام hook مباشرة
   const {
     data: tasks = [],
     isLoading: loading,
@@ -40,12 +38,9 @@ export default function TaskColumn({ status, projectId, search }) {
     id: status,
   });
 
-  // =========================
-  // CREATE TASK
-  // =========================
   const goToCreate = () => {
     router.push(
-      `/projects/${projectId}/tasks/create?status=${encodeURIComponent(status)}`
+      `/projects/${projectId}/tasks/create?status=${encodeURIComponent(status)}`,
     );
   };
 
@@ -59,7 +54,6 @@ export default function TaskColumn({ status, projectId, search }) {
       ref={setNodeRef}
       className="flex w-[min(78vw,290px)] shrink-0 flex-col xl:w-[300px]"
     >
-      {/* HEADER */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-xs font-semibold text-gray-600">
           <span
@@ -83,7 +77,6 @@ export default function TaskColumn({ status, projectId, search }) {
         </button>
       </div>
 
-      {/* ADD TASK */}
       <div
         onClick={goToCreate}
         className="border border-dashed rounded-lg py-3 
@@ -95,7 +88,6 @@ export default function TaskColumn({ status, projectId, search }) {
         <span className="font-medium">ADD NEW TASK</span>
       </div>
 
-      {/* TASKS */}
       {loading ? (
         <div className="text-xs text-gray-400">Loading...</div>
       ) : isError ? (
@@ -112,7 +104,6 @@ export default function TaskColumn({ status, projectId, search }) {
         </div>
       )}
 
-      {/* MODAL */}
       <TaskDetailsModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

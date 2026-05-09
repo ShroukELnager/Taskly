@@ -110,24 +110,20 @@ export default function MyStatistics() {
 
       <StatsFilters setFilters={setFilters} />
 
-      {/* LOADING */}
       {(statsLoading || projectsLoading) && (
         <div className="mt-8 text-center text-lg">
           Loading...
         </div>
       )}
 
-      {/* ERRORS */}
       {(statsError || projectsError) && (
         <div className="mt-8 text-center text-red-500">
           Something went wrong
         </div>
       )}
 
-      {/* CALENDAR DATA */}
     {statsData && (
   <>
-    {/* TOP SECTION */}
     <div className="mt-6 rounded-lg bg-[#F7F8FC] p-4 sm:p-5">
       <StatsCards data={statsData} />
 
@@ -137,13 +133,10 @@ export default function MyStatistics() {
       />
     </div>
 
-    {/* BOTTOM CARDS */}
     <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
       
-      {/* LEFT */}
       <TotalsCard totals={statsData.totals} />
 
-      {/* RIGHT */}
       {projectsData && (
         <ProjectsTasksCard projects={projectsData} />
       )}

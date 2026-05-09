@@ -63,7 +63,6 @@ export default function AcceptInviteModal({ open, onClose, token: inviteToken })
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-[520px] rounded-xl shadow-xl p-8 text-center relative">
 
-        {/* Close */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3"
@@ -71,19 +70,16 @@ export default function AcceptInviteModal({ open, onClose, token: inviteToken })
           <Image src="/images/close.png" alt="close" width={16} height={16} />
         </button>
 
-        {/* Badge */}
         <div className="inline-flex items-center gap-2 bg-[#EEF2FF] text-[#3B82F6] text-xs font-medium px-3 py-1 rounded-full mb-6">
           <Image src="/images/new.png" width={16} height={16} alt="" />
           NEW PROJECT INVITATION
         </div>
 
-        {/* Title */}
         <h2 className="text-xl sm:text-2xl font-semibold text-[#0F172A] mb-6">
           You’ve been invited to join <br />
           <span className="font-bold">a new project</span>
         </h2>
 
-        {/* Messages */}
         {successMsg && (
           <p className="text-green-600 text-sm mb-4">{successMsg}</p>
         )}
@@ -92,7 +88,6 @@ export default function AcceptInviteModal({ open, onClose, token: inviteToken })
           <p className="text-red-500 text-sm mb-4">{errorMsg}</p>
         )}
 
-        {/* Button */}
         <button
           onClick={handleAccept}
           disabled={mutation.isPending}

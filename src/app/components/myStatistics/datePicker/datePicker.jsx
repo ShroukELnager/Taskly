@@ -33,7 +33,6 @@ export function DatePicker({ onChange }) {
     to: today,
   });
 
-  // ✅ temp state
   const [tempDate, setTempDate] = useState({
     from: startWeek,
     to: today,

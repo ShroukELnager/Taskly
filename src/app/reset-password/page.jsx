@@ -120,7 +120,6 @@ export default function ResetPassword() {
             {...register("confirmPassword", { required: true })}
           />
 
-          {/* requirements */}
           <div className="bg-[#EEF2FF] p-4 rounded-lg text-sm space-y-2">
             <p className="text-xs text-gray-400">SECURITY REQUIREMENTS</p>
 
@@ -141,12 +140,10 @@ export default function ResetPassword() {
             </p>
           </div>
 
-          {/* errors */}
           {errorMsg && (
             <p className="text-red-500 text-sm">{errorMsg}</p>
           )}
 
-          {/* success */}
           {successMsg && (
             <p className="text-green-600 text-sm">{successMsg}</p>
           )}

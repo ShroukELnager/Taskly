@@ -19,14 +19,12 @@ export default function Navbar() {
   const dropdownRef = useRef();
   const router = useRouter();
 
-  // ✅ FIX: Supabase user shape
   const name = user?.user_metadata?.name || "No name provided";
 
   const jobTitle = user?.user_metadata?.job_title || "No job title provided";
 
   const email = user?.email || "No email";
 
-  // ✅ safe initials
   const initials = (name || "")
     .split(" ")
     .filter(Boolean)
@@ -34,7 +32,6 @@ export default function Navbar() {
     .join("")
     .toUpperCase();
 
-  // close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!dropdownRef.current?.contains(e.target)) {
@@ -46,7 +43,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // auth sync
   useEffect(() => {
     const syncAuth = async () => {
       const token = await getValidAccessToken(dispatch);
@@ -83,13 +79,11 @@ const { mutate: handleLogout, isPending } = useMutation({
         className="relative ml-auto flex min-w-0 items-center gap-3"
         ref={dropdownRef}
       >
-        {/* user info */}
         <div className="hidden max-w-[220px] text-right sm:block lg:max-w-[320px]">
           <p className="truncate text-sm font-semibold">{name}</p>
           <p className="truncate text-xs text-gray-500">{jobTitle}</p>
         </div>
 
-        {/* avatar */}
         <div
           onClick={() => setOpen(!open)}
           className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border bg-blue-600 text-sm font-semibold text-white"
@@ -97,7 +91,6 @@ const { mutate: handleLogout, isPending } = useMutation({
           {initials}
         </div>
 
-        {/* dropdown */}
         {open && (
           <div className="animate-fadeIn absolute right-0 top-14 z-50 w-[min(calc(100vw-2rem),18rem)] rounded-xl bg-white p-4 shadow-xl">
             <div className="flex min-w-0 items-center gap-3">

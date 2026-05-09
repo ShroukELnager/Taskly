@@ -16,7 +16,6 @@ export default function Projects() {
 
   const limit = 5;
 
-  // ✅ fetch function
   const fetchProjects = async ({ pageParam = 1 }) => {
     const offset = (pageParam - 1) * limit;
 

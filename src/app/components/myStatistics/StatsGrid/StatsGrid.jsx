@@ -16,23 +16,16 @@ export default function StatsGrid({ data, statusColors }) {
               relative flex min-h-[116px] items-center justify-between rounded-lg bg-[#F7F8FF] p-4
               md:min-h-[420px] md:flex-col md:items-start md:justify-start md:bg-white
               xl:min-h-[500px]
-              ${
-                today
-                  ? "border-2 border-blue-600"
-                  : "border border-gray-200"
-              }
+              ${today ? "border-2 border-blue-600" : "border border-gray-200"}
             `}
           >
-            {/* TODAY */}
             {today && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-medium text-white md:left-1/2 md:right-auto md:top-[-12px] md:-translate-x-1/2 md:translate-y-0">
-  TODAY
-</div>
+                TODAY
+              </div>
             )}
 
-            {/* LEFT SIDE */}
             <div className="flex min-w-0 items-center gap-3 md:block">
-              {/* day/date */}
               <div>
                 <p className="text-xs uppercase text-gray-400">
                   {format(currentDate, "EEE")}
@@ -43,31 +36,26 @@ export default function StatsGrid({ data, statusColors }) {
                 </h2>
               </div>
 
-              {/* divider mobile */}
               <div className="h-10 w-px bg-gray-200 md:hidden" />
 
-              {/* statuses mobile */}
               <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 md:hidden">
                 {Object.entries(item.statuses || {}).length > 0 ? (
-                  Object.entries(item.statuses).map(
-                    ([status, count], idx) => (
-                      <div
-                        key={idx}
-                        className={`rounded px-2 py-[2px] text-xs font-bold text-white ${
-                          statusColors?.[status] || "bg-blue-500"
-                        }`}
-                      >
-                        {count}
-                      </div>
-                    )
-                  )
+                  Object.entries(item.statuses).map(([status, count], idx) => (
+                    <div
+                      key={idx}
+                      className={`rounded px-2 py-[2px] text-xs font-bold text-white ${
+                        statusColors?.[status] || "bg-blue-500"
+                      }`}
+                    >
+                      {count}
+                    </div>
+                  ))
                 ) : (
                   <div className="text-xs text-gray-400">0</div>
                 )}
               </div>
             </div>
 
-            {/* desktop statuses */}
             <div className="hidden w-full min-w-0 flex-col gap-2 md:flex">
               {Object.entries(item.statuses || {}).length > 0 ? (
                 Object.entries(item.statuses).map(([status, count], idx) => (

@@ -8,7 +8,6 @@ export default function StatsFilters({ setFilters }) {
  return (
   <div className="flex flex-col gap-4 rounded-lg bg-[#F1F3FF] p-4 lg:flex-row lg:items-start lg:justify-between">
     
-    {/* mobile */}
     <div className="flex w-full flex-col items-stretch gap-3 sm:items-center lg:hidden">
       <DatePicker
         onChange={(range) => {
@@ -37,7 +36,6 @@ export default function StatsFilters({ setFilters }) {
       />
     </div>
 
-    {/* desktop */}
     <div className="hidden w-full flex-wrap items-start justify-between gap-4 lg:flex">
       <DatePicker
         onChange={(range) => {

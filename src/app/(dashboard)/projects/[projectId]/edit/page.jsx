@@ -25,7 +25,6 @@ export default function EditProjectPage() {
 
   const description = watch("description") || "";
 
-  // fill form when data arrives
   useEffect(() => {
     if (data) {
       setValue("name", data.name);
@@ -44,7 +43,7 @@ export default function EditProjectPage() {
         onError: () => {
           toast.error("Failed to update project");
         },
-      }
+      },
     );
   };
 
@@ -68,7 +67,6 @@ export default function EditProjectPage() {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-5 p-4 sm:p-6"
           >
-            {/* header */}
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#E5EEFA]">
                 <Image
@@ -80,16 +78,13 @@ export default function EditProjectPage() {
               </div>
 
               <div>
-                <h1 className="font-semibold text-lg">
-                  Edit Project Details
-                </h1>
+                <h1 className="font-semibold text-lg">Edit Project Details</h1>
                 <p className="text-gray-600 text-sm">
                   Update your project information
                 </p>
               </div>
             </div>
 
-            {/* name */}
             <div className="flex flex-col gap-2">
               <label className="text-xs text-gray-500">Project name</label>
               <input
@@ -99,13 +94,10 @@ export default function EditProjectPage() {
                 }`}
               />
               {errors.name && (
-                <p className="text-red-500 text-sm">
-                  {errors.name.message}
-                </p>
+                <p className="text-red-500 text-sm">{errors.name.message}</p>
               )}
             </div>
 
-            {/* description */}
             <div className="flex flex-col gap-2">
               <label className="text-xs text-gray-500">Description</label>
               <textarea
@@ -119,7 +111,6 @@ export default function EditProjectPage() {
               </p>
             </div>
 
-            {/* buttons */}
             <div className="mt-3 flex justify-between">
               <button
                 type="button"

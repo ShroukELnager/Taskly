@@ -144,7 +144,6 @@ export default function Signup() {
               />
             </div>
 
-            {/* RULES */}
             <div className="bg-[#D7E2FF] p-4 rounded-lg space-y-3 text-sm col-span-2">
               <div className="flex items-center gap-2">
                 <Image

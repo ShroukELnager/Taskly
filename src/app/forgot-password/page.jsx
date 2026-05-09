@@ -25,7 +25,7 @@ export default function ForgotPassword() {
 
     onSuccess: () => {
       setMessage(
-        "If an account exists with this email, we’ve sent a password reset link."
+        "If an account exists with this email, we’ve sent a password reset link.",
       );
 
       setAttempts((prev) => prev + 1);
@@ -66,7 +66,6 @@ export default function ForgotPassword() {
 
   return (
     <div className="bg-[#F5F6FA] min-h-screen px-4">
-
       <div className="flex items-center gap-2 p-4">
         <Image src="/images/logo.svg" width={20} height={20} alt="logo" />
         <h1 className="font-bold text-xl">TASKLY</h1>
@@ -108,8 +107,8 @@ export default function ForgotPassword() {
             {mutation.isPending
               ? "Sending..."
               : cooldown > 0
-              ? `Resend in ${formatTime(cooldown)}`
-              : "Send Reset Link"}
+                ? `Resend in ${formatTime(cooldown)}`
+                : "Send Reset Link"}
           </button>
 
           <div className="mt-4 text-sm text-[#0B4DBA]">
@@ -156,9 +155,7 @@ export default function ForgotPassword() {
                 width={14}
                 height={14}
               />
-              {cooldown > 0
-                ? `Resend in ${formatTime(cooldown)}`
-                : "Resend"}
+              {cooldown > 0 ? `Resend in ${formatTime(cooldown)}` : "Resend"}
             </button>
           </div>
         </form>

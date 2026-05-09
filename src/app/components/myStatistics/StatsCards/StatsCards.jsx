@@ -29,12 +29,10 @@ export default function StatsCards({ data }) {
           key={i}
           className="flex min-h-[112px] items-center justify-between gap-4 rounded-lg bg-white p-4 text-left shadow-sm md:p-5"
         >
-          {/* mobile: image first */}
           <div className="order-2 shrink-0 rounded-lg bg-[#F1F3FF] p-3">
             <Image src={c.img} alt="icon" width={20} height={20} />
           </div>
 
-          {/* text */}
           <div className="order-1 min-w-0">
             <p className="mb-2 truncate text-xs text-gray-400 md:text-sm">
               {c.title}
